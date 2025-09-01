@@ -1,0 +1,14 @@
+server:
+  port: 8080
+  servlet:
+    encoding:
+      charset: UTF-8
+      enabled: true
+      force: true
+
+spring:
+  jackson:
+    date-format: yyyy/MM/dd HH:mm
+    time-zone: Asia/Seoul
+  profiles:
+    active: local
