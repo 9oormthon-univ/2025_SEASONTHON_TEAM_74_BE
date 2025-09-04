@@ -73,11 +73,20 @@ public class RoomController {
         return ApiResponse.onSuccess(roomService.getTeamLobbyInfo(roomId, teamId, userId));
     }
 
+    //팀장하기
     @PatchMapping("/{roomId}/{teamId}/leader")
     public ApiResponse<RoomRes.TeamInfo> changeLeader(@PathVariable Long roomId, @PathVariable Long teamId) {
         Long userId = jwtTokenProvider.getUserIdFromToken();
 
-        return ApiResponse.onSuccess(roomService.changeLeader(roomId, userId, teamId));
+        return ApiResponse.onSuccess(roomService.changeLeader(roomId, userId, teamId, true));
+    }
+
+    //팀원하기
+    @PatchMapping("/{roomId}/{teamId}/member")
+    public ApiResponse<RoomRes.TeamInfo> changeMember(@PathVariable Long roomId, @PathVariable Long teamId) {
+        Long userId = jwtTokenProvider.getUserIdFromToken();
+
+        return ApiResponse.onSuccess(roomService.changeLeader(roomId, userId, teamId, false));
     }
 
 }

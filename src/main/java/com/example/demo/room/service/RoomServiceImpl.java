@@ -220,7 +220,7 @@ public class RoomServiceImpl implements RoomService {
             throw new RuntimeException("방에 참가하지 않은 유저입니다.");
         }
 
-        Team team = teamRepository.findById(teamId).orElseThrow(() -> new RuntimeException("Team not found"));
+        Team team = teamRepository.findByIdAndRoomId(teamId, roomId).orElseThrow(() -> new RuntimeException("Team not found"));
         List<TeamMember> teamMembers = teamMemberRepository.findAllByTeamIdAndRoomId(teamId, roomId);
 
         TeamMember leader = teamMembers.stream()
@@ -249,22 +249,30 @@ public class RoomServiceImpl implements RoomService {
     }
 
     @Override
-    public RoomRes.TeamInfo changeLeader(Long roomId, Long userId, Long teamId) {
+    public RoomRes.TeamInfo changeLeader(Long roomId, Long userId, Long teamId, Boolean isLeader) {
 
-        if(!teamMemberRepository.existsByRoomIdAndUserId(roomId, userId)){
-            throw new RuntimeException("방에 참가하지 않은 유저입니다.");
-        }
 
-        Team team = teamRepository.findById(teamId).orElseThrow(() -> new RuntimeException("Team not found"));
-
-        TeamMember teamMember = teamMemberRepository.findByUserIdAndRoomId(userId, roomId).orElseThrow(() -> new RuntimeException("TeamMember not found"));
-        if(teamMember.getIsLeader()){
-            throw new RuntimeException("이미 리더입니다.");
+        //팀이 존재하는지 확인
+        Team team = teamRepository.findByIdAndRoomId(teamId,roomId).orElseThrow(() -> new RuntimeException("Team not found"));
+        TeamMember teamMember = teamMemberRepository.findByRoomIdAndUserId(roomId, userId).orElseThrow(() -> new RuntimeException("방에 참가하지 않은 유저입니다."));
+        Integer count = teamMemberRepository.countByRoomIdAndTeamId(roomId, teamId);
+        if(count >= 6){
+            throw new RuntimeException("정원 초과입니다. (최대 6명)");
         }
-        if(teamMemberRepository.existsByTeamIdAndRoomIdAndIsLeader(teamId, roomId, true)){
-            throw new RuntimeException("팀에 리더가 두명입니다.");
+        if(isLeader) {
+            if (teamMemberRepository.existsByTeamIdAndRoomIdAndIsLeader(teamId, roomId, true)) {
+                throw new RuntimeException("팀에 리더가 존재합니다.");
+            }
+            if(teamMember.getIsLeader()){
+                throw new RuntimeException("이미 팀장입니다.");
+            }
+            teamMember.setIsLeader(true);
+        }else{
+            if (!teamMember.getIsLeader() && Objects.equals(teamMember.getTeam().getId(), team.getId())) {
+                throw new RuntimeException("이미 팀원입니다.");
+            }
+            teamMember.setIsLeader(false);
         }
-        teamMember.setIsLeader(true);
         teamMember.setTeam(team);
         teamMemberRepository.save(teamMember);
 
@@ -278,7 +286,6 @@ public class RoomServiceImpl implements RoomService {
         List<TeamMember> members = teamMembers.stream()
                 .filter(tm -> !tm.getIsLeader())
                 .toList();
-
 
         Map<String, Boolean> leaderMap = new HashMap<>();
         if(leader != null){

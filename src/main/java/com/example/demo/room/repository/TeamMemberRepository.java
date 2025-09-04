@@ -30,4 +30,10 @@ public interface TeamMemberRepository extends JpaRepository<TeamMember,Long> {
 
 
     Boolean existsByTeamIdAndRoomIdAndIsLeader(Long teamId, Long roomId, boolean b);
+
+    Optional<TeamMember> findByRoomIdAndTeamId(Long roomId, Long teamId);
+
+    Optional<TeamMember> findByRoomIdAndUserId(Long roomId, Long userId);
+
+    Integer countByRoomIdAndTeamId(Long roomId, Long teamId);
 }
