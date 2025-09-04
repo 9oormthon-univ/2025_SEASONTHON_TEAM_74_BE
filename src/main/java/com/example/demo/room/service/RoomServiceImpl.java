@@ -300,4 +300,18 @@ public class RoomServiceImpl implements RoomService {
 
         return new RoomRes.TeamInfo(team.getId(), team.getTeamName(), leaderMap, memberList);
     }
+
+    @Override
+    public String readyTeamMember(Long roomId, Long userId) {
+
+        TeamMember teamMember = teamMemberRepository.findByRoomIdAndUserId(roomId, userId).orElseThrow(() -> new RuntimeException("방에 참가하지 않은 유저입니다."));
+
+        if(teamMember.getTeam() == null) throw new RuntimeException("팀에 속해있지 않습니다.");
+
+        teamMember.setIsReady(!teamMember.getIsReady());
+        teamMemberRepository.save(teamMember);
+
+        return teamMember.getIsReady() ? "준비 완료되었습니다." : "준비 취소되었습니다.";
+
+    }
 }

@@ -89,4 +89,12 @@ public class RoomController {
         return ApiResponse.onSuccess(roomService.changeRole(roomId, userId, teamId, false));
     }
 
+    //팀원 준비
+    @PatchMapping("/{roomId}/me/ready")
+    public ApiResponse<String> changeReady(@PathVariable Long roomId) {
+        Long userId = jwtTokenProvider.getUserIdFromToken();
+        String message = roomService.readyTeamMember(roomId, userId);
+        return ApiResponse.onSuccess(message);
+    }
+
 }
