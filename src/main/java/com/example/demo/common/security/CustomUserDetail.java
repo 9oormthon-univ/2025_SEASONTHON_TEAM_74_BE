@@ -1,6 +1,6 @@
 package com.example.demo.common.security;
 
-import com.example.demo.entity.User;
+import com.example.demo.user.entity.User;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
@@ -22,9 +22,10 @@ public class CustomUserDetail implements UserDetails {
     public String getUsername() {
         return String.valueOf(user.getId());
     }
+
     @Override
     public String getPassword() {
-        return String.valueOf(user.getPassword());
+        return "no pwd"; // 비밀번호는 사용하지 않으므로 임의의 문자열 반환
     }
 
     @Override
