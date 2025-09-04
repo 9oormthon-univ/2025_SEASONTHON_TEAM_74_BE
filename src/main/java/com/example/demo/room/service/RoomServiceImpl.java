@@ -61,6 +61,7 @@ public class RoomServiceImpl implements RoomService {
                     .room(room)
                     .teamName("팀명 " + (i + 1))
                     .isReady(false)
+                    .asset(room.getSeedMoney())
                     .build();
             teamRepository.save(team);
         }
@@ -86,6 +87,10 @@ public class RoomServiceImpl implements RoomService {
             if(!room.getPwd().equals(request.getPwd())){
                 throw new RuntimeException("비밀번호가 다릅니다.");
             }
+        }
+
+        if(room.getMaxMember() <= 36){
+
         }
 
         //팀 멤버에 본인 등록

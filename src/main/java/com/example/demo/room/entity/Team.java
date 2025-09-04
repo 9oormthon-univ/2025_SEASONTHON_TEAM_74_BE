@@ -28,7 +28,7 @@ public class Team {
     private Boolean isReady;
 
     @Column(name = "asset")
-    private String asset;   // 팀 자산 (필드명만 있어 의미 확인 필요)
+    private Integer asset;   // 팀 자산 (필드명만 있어 의미 확인 필요)
 
     // 양방향 매핑 (1:N)
     @OneToMany(mappedBy = "team", cascade = CascadeType.ALL, orphanRemoval = true)
