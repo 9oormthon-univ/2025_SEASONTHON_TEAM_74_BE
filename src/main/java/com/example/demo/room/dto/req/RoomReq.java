@@ -38,4 +38,13 @@ public class RoomReq {
         @Max(value = 1000000, message = "최대 시드머니는 1,000,000 이하여야 합니다.")
         private Integer seedMoney;
     }
+
+    @Getter
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    public static class JoinRoom {
+        @NotNull(message = "닉네임은 필수입니다.")
+        private String nickname;
+        private String pwd;
+        private String inviteCode;
+    }
 }

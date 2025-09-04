@@ -36,11 +36,11 @@ public class RoomController {
     }
 
     //방 참가하기
-//    @PostMapping("")
-//    public ApiResponse<RoomRes.CreateRoom> createRoom(@Valid @RequestBody RoomReq.CreateRoom request) {
-//        Long user = jwtTokenProvider.getUserIdFromToken();
-//        return ApiResponse.onSuccess(roomService.createRoom(request, user));
-//    }
+    @PostMapping("/join")
+    public ApiResponse<RoomRes.JoinRoom> joinRoom(@Valid @RequestBody RoomReq.JoinRoom request) {
+        Long user = jwtTokenProvider.getUserIdFromToken();
+        return ApiResponse.onSuccess(roomService.joinRoom(request, user));
+    }
 
 
 
