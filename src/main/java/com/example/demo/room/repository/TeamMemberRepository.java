@@ -14,4 +14,6 @@ public interface TeamMemberRepository extends JpaRepository<TeamMember,Long> {
     List<TeamMember> findAllByTeamId(Long id);
 
     <T> Optional<T> findByTeamIdAndIsLeader(Long id, boolean b);
+
+    Integer countByRoomId(Long id);
 }

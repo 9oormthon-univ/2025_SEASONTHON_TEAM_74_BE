@@ -89,8 +89,9 @@ public class RoomServiceImpl implements RoomService {
             }
         }
 
-        if(room.getMaxMember() <= 36){
-
+        //최대 인원 초과 확인
+        if(room.getMaxMember() <= teamMemberRepository.countByRoomId(room.getId())){
+            throw new RuntimeException("인원이 가득 찼습니다.");
         }
 
         //팀 멤버에 본인 등록
