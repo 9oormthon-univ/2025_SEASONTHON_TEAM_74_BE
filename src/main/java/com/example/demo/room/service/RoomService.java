@@ -13,4 +13,6 @@ public interface RoomService {
     RoomRes.JoinRoom joinRoom(RoomReq.JoinRoom request, Long user);
 
     void leaveRoom(Long roomId, Long userId);
+
+    void removeRoom(Long roomId, Long userId);
 }

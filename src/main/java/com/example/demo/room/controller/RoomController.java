@@ -47,5 +47,12 @@ public class RoomController {
         return ApiResponse.onSuccess("방 나가기 성공");
     }
 
+    //방 제거하기
+    @DeleteMapping("/{roomId}/remove")
+    public ApiResponse<String> removeRoom(@PathVariable Long roomId) {
+        Long userId = jwtTokenProvider.getUserIdFromToken();
+        roomService.removeRoom(roomId, userId);
+        return ApiResponse.onSuccess("방 제거 성공");
+    }
 
 }

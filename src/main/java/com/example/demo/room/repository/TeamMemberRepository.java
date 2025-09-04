@@ -18,4 +18,6 @@ public interface TeamMemberRepository extends JpaRepository<TeamMember,Long> {
     Integer countByRoomId(Long id);
 
     void deleteByRoomIdAndUserId(Long roomId, Long userId);
+
+    void deleteAllByRoomId(Long roomId);
 }

@@ -11,4 +11,6 @@ import java.util.List;
 @Repository
 public interface TeamRepository extends JpaRepository<Team,Long> {
     List<Team> findAllByRoomId(Long id);
+
+    void deleteAllByRoomId(Long roomId);
 }

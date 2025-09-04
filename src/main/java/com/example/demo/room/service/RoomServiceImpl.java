@@ -158,4 +158,16 @@ public class RoomServiceImpl implements RoomService {
             roomRepository.save(room);
         }
     }
+
+    @Override
+    public void removeRoom(Long roomId, Long userId) {
+        Room room = roomRepository.findById(roomId).orElseThrow(() -> new RuntimeException("Room not found"));
+        if(!room.getUser().getId().equals(userId)){
+            throw new RuntimeException("방장이 아닙니다.");
+        }
+        room.setStatus(RoomStatus.ENDED);
+        teamMemberRepository.deleteAllByRoomId(roomId);
+        teamRepository.deleteAllByRoomId(roomId);
+        roomRepository.save(room);
+    }
 }
