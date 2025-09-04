@@ -1,0 +1,58 @@
+package com.example.demo.room.controller;
+
+import com.example.demo.apiPayload.ApiResponse;
+import com.example.demo.common.security.JwtTokenProvider;
+import com.example.demo.room.dto.req.RoomReq;
+import com.example.demo.room.dto.res.RoomRes;
+import com.example.demo.room.service.RoomService;
+import com.example.demo.room.service.RoomServiceImpl;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+import org.springframework.web.bind.annotation.*;
+
+@RestController
+@RequestMapping("/api/rooms")
+@RequiredArgsConstructor
+public class RoomController {
+
+    private final RoomService roomService;
+    private final JwtTokenProvider jwtTokenProvider;
+
+    //초대 코드 발급
+    @PostMapping("/invites")
+    public ApiResponse<RoomRes.InviteCode> createInvite() {
+
+        return ApiResponse.onSuccess(roomService.createInviteCode());
+    }
+
+    //방 만들기
+    @PostMapping("")
+    public ApiResponse<RoomRes.CreateRoom> createRoom(@Valid @RequestBody RoomReq.CreateRoom request) {
+        Long user = jwtTokenProvider.getUserIdFromToken();
+        return ApiResponse.onSuccess(roomService.createRoom(request, user));
+    }
+
+    //방 참가하기
+    @PostMapping("/join")
+    public ApiResponse<RoomRes.JoinRoom> joinRoom(@Valid @RequestBody RoomReq.JoinRoom request) {
+        Long user = jwtTokenProvider.getUserIdFromToken();
+        return ApiResponse.onSuccess(roomService.joinRoom(request, user));
+    }
+
+    //방 나가기
+    @DeleteMapping("/{roomId}/participants/me")
+    public ApiResponse<String> leaveRoom(@PathVariable Long roomId) {
+        Long userId = jwtTokenProvider.getUserIdFromToken();
+        roomService.leaveRoom(roomId, userId);
+        return ApiResponse.onSuccess("방 나가기 성공");
+    }
+
+    //방 제거하기
+    @DeleteMapping("/{roomId}/remove")
+    public ApiResponse<String> removeRoom(@PathVariable Long roomId) {
+        Long userId = jwtTokenProvider.getUserIdFromToken();
+        roomService.removeRoom(roomId, userId);
+        return ApiResponse.onSuccess("방 제거 성공");
+    }
+
+}

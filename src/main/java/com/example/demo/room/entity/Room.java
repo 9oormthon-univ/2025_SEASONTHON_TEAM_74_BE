@@ -5,16 +5,14 @@ import com.example.demo.room.entity.enums.Mode;
 import com.example.demo.room.entity.enums.RoomStatus;
 import com.example.demo.user.entity.User;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.util.ArrayList;
 import java.util.List;
 
 @Entity
 @Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
@@ -25,20 +23,23 @@ public class Room extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column
-    private String code;
+    @Column(name = "invite_code" , unique = true)
+    private String inviteCode;
 
     @Column
     private String pwd;
 
     @Column(name = "seed_money")
-    private String seedMoney;
+    private Integer seedMoney;
 
     @Column(name = "year_set")
     private String yearSet;
 
     @Column(name = "max_round")
     private Integer maxRound;
+
+    @Column(name = "max_member")
+    private Integer maxMember;
 
     @Column(name = "max_team")
     private Integer maxTeam;
@@ -57,4 +58,8 @@ public class Room extends BaseEntity {
 
     @OneToMany(mappedBy = "room", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Team> teams = new ArrayList<>();
+
+    @OneToMany(mappedBy = "room", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<TeamMember> teamMembers = new ArrayList<>();
+
 }
