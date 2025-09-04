@@ -8,6 +8,7 @@ import com.example.demo.room.dto.res.TeamRes;
 import com.example.demo.room.entity.Room;
 import com.example.demo.room.entity.Team;
 import com.example.demo.room.entity.TeamMember;
+import com.example.demo.room.entity.enums.RoomStatus;
 import com.example.demo.room.repository.RoomRepository;
 import com.example.demo.room.repository.TeamMemberRepository;
 import com.example.demo.room.repository.TeamRepository;
@@ -55,6 +56,11 @@ public class RoomServiceImpl implements RoomService {
         userRepository.save(user);
 
         Room room = roomRepository.save(RoomConverter.toRoomEntity(request, user));
+        teamMemberRepository.save(TeamMember.builder()
+                .room(room)
+                .user(user)
+                .isLeader(false)
+                .build());
 
         for (int i = 0; i < room.getMaxTeam(); i++) {
             Team team = Team.builder()
@@ -138,5 +144,18 @@ public class RoomServiceImpl implements RoomService {
 
 
         return new RoomRes.JoinRoom(room.getId(), user.getNickName(), teamDetails);
+    }
+
+    @Override
+    public void leaveRoom(Long roomId, Long userId) {
+        User user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
+
+        teamMemberRepository.deleteByRoomIdAndUserId(roomId, userId);
+
+        if (teamMemberRepository.countByRoomId(roomId) == 0) {
+            Room room = roomRepository.findById(roomId).orElseThrow(() -> new RuntimeException("Room not found"));
+            room.setStatus(RoomStatus.ENDED);
+            roomRepository.save(room);
+        }
     }
 }

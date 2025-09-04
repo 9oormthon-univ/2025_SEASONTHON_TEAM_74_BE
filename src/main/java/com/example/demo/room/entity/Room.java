@@ -5,16 +5,14 @@ import com.example.demo.room.entity.enums.Mode;
 import com.example.demo.room.entity.enums.RoomStatus;
 import com.example.demo.user.entity.User;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.util.ArrayList;
 import java.util.List;
 
 @Entity
 @Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder

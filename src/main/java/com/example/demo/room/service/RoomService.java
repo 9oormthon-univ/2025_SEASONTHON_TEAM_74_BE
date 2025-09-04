@@ -11,4 +11,6 @@ public interface RoomService {
     RoomRes.CreateRoom createRoom(RoomReq.CreateRoom request, Long user);
 
     RoomRes.JoinRoom joinRoom(RoomReq.JoinRoom request, Long user);
+
+    void leaveRoom(Long roomId, Long userId);
 }

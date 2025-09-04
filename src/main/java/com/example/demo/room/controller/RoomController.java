@@ -8,10 +8,7 @@ import com.example.demo.room.service.RoomService;
 import com.example.demo.room.service.RoomServiceImpl;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/rooms")
@@ -42,6 +39,13 @@ public class RoomController {
         return ApiResponse.onSuccess(roomService.joinRoom(request, user));
     }
 
+    //방 나가기
+    @DeleteMapping("/{roomId}/participants/me")
+    public ApiResponse<String> leaveRoom(@PathVariable Long roomId) {
+        Long userId = jwtTokenProvider.getUserIdFromToken();
+        roomService.leaveRoom(roomId, userId);
+        return ApiResponse.onSuccess("방 나가기 성공");
+    }
 
 
 }
