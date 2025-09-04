@@ -170,4 +170,49 @@ public class RoomServiceImpl implements RoomService {
         teamRepository.deleteAllByRoomId(roomId);
         roomRepository.save(room);
     }
+
+    @Override
+    public RoomRes.JoinRoom getLobbyInfo(Long roomId, Long userId) {
+        User user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
+
+        if(!teamMemberRepository.existsByRoomIdAndUserId(roomId, userId)){
+            throw new RuntimeException("방에 참가하지 않은 유저입니다.");
+        }
+
+        List<Team> teams = teamRepository.findAllByRoomId(roomId);
+
+        List<TeamRes.TeamDetail> teamDetails = teams.stream()
+                .map(team -> {
+
+                    // 3. 각 팀의 멤버들을 조회
+                    List<TeamMember> teamMembers = teamMemberRepository.findAllByTeamId(team.getId());
+
+                    Map<Boolean, List<String>> partitionedNicknames = teamMembers.stream()
+                            .collect(Collectors.partitioningBy(
+                                    TeamMember::getIsLeader,
+                                    Collectors.mapping(
+                                            tm -> tm.getUser().getNickName(),
+                                            Collectors.toList()
+                                    )
+                            ));
+
+                    List<String> memberNicknames = partitionedNicknames.get(false); // isLeader가 false인 사람들
+                    String leaderNickname = partitionedNicknames.get(true).stream()
+                            .findFirst()
+                            .orElse(null); // isLeader가 true인 사람 (단 한 명이라고 가정)
+
+                    // 4. TeamDetail 레코드를 생성하여 반환
+                    return new TeamRes.TeamDetail(
+                            team.getId(),
+                            team.getTeamName(),
+                            team.getIsReady(),
+                            leaderNickname,
+                            memberNicknames
+                    );
+                })
+                .toList(); // 최종적으로 List<TeamDetail>을 반환
+
+
+        return new RoomRes.JoinRoom(roomId, user.getNickName(), teamDetails);
+    }
 }

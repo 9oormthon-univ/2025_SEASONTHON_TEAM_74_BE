@@ -55,4 +55,12 @@ public class RoomController {
         return ApiResponse.onSuccess("방 제거 성공");
     }
 
+    @GetMapping("/{roomId}/lobby")
+    public ApiResponse<RoomRes.JoinRoom> getLobbyInfo(@PathVariable Long roomId) {
+        //로비 정보 조회 기능 구현 필요
+        Long userId = jwtTokenProvider.getUserIdFromToken();
+
+        return ApiResponse.onSuccess(roomService.getLobbyInfo(roomId, userId));
+    }
+
 }
