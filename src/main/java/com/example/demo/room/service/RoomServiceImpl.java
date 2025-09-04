@@ -249,7 +249,7 @@ public class RoomServiceImpl implements RoomService {
     }
 
     @Override
-    public RoomRes.TeamInfo changeLeader(Long roomId, Long userId, Long teamId, Boolean isLeader) {
+    public RoomRes.TeamInfo changeRole(Long roomId, Long userId, Long teamId, Boolean isLeader) {
 
 
         //팀이 존재하는지 확인

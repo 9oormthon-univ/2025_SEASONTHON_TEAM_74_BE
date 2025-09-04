@@ -78,7 +78,7 @@ public class RoomController {
     public ApiResponse<RoomRes.TeamInfo> changeLeader(@PathVariable Long roomId, @PathVariable Long teamId) {
         Long userId = jwtTokenProvider.getUserIdFromToken();
 
-        return ApiResponse.onSuccess(roomService.changeLeader(roomId, userId, teamId, true));
+        return ApiResponse.onSuccess(roomService.changeRole(roomId, userId, teamId, true));
     }
 
     //팀원하기
@@ -86,7 +86,7 @@ public class RoomController {
     public ApiResponse<RoomRes.TeamInfo> changeMember(@PathVariable Long roomId, @PathVariable Long teamId) {
         Long userId = jwtTokenProvider.getUserIdFromToken();
 
-        return ApiResponse.onSuccess(roomService.changeLeader(roomId, userId, teamId, false));
+        return ApiResponse.onSuccess(roomService.changeRole(roomId, userId, teamId, false));
     }
 
 }

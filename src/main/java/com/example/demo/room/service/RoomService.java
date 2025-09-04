@@ -20,5 +20,5 @@ public interface RoomService {
 
     RoomRes.TeamInfo getTeamLobbyInfo(Long roomId, Long teamId, Long userId);
 
-    RoomRes.TeamInfo changeLeader(Long roomId, Long userId, Long teamId, Boolean isLeader);
+    RoomRes.TeamInfo changeRole(Long roomId, Long userId, Long teamId, Boolean isLeader);
 }
