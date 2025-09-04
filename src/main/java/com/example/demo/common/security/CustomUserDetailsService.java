@@ -2,8 +2,8 @@ package com.example.demo.common.security;
 
 import com.example.demo.apiPayload.code.exception.GeneralException;
 import com.example.demo.apiPayload.code.status.ErrorStatus;
-import com.example.demo.entity.User;
-import com.example.demo.repository.UserRepository;
+import com.example.demo.user.entity.User;
+import com.example.demo.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
