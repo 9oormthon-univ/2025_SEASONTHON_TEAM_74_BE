@@ -14,7 +14,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@Table(name = "industry")
+@Table(name = "instrument")
 public class Instrument {
 
     @Id
