@@ -21,6 +21,7 @@ import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import java.util.Arrays;
+import java.util.List;
 
 @Configuration
 @EnableWebSecurity
@@ -40,7 +41,9 @@ public class SecurityConfig {
                                 "/doc/**",
                                 "/swagger-ui/**",
                                 "/v3/api-docs/**",
-                                "/swagger-resources/**"
+                                "/swagger-resources/**",
+                                "/v3/**",
+                                "**"
                         ).permitAll()
 
                         // AWS 헬스 체크
@@ -107,12 +110,12 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
         // 우선 모든 출저 허용!!
-//        configuration.setAllowedOriginPatterns(List.of("*"));
+        configuration.setAllowedOriginPatterns(List.of("*"));
         // 이후에 특정 출처만 하기!!!
-        configuration.setAllowedOrigins(Arrays.asList(
-                "http://localhost:8080",
-                "http://localhost:5173"
-        ));
+//        configuration.setAllowedOrigins(Arrays.asList(
+//                "http://localhost:8080",
+//                "http://localhost:5173"
+//        ));
         configuration.setAllowCredentials(true); // 자격 증명 허용 (쿠키, 인증 정보 포함)
         configuration.addAllowedMethod("*");
         configuration.addAllowedHeader("*");
