@@ -56,6 +56,15 @@ public class RoomServiceImpl implements RoomService {
 
         Room room = roomRepository.save(RoomConverter.toRoomEntity(request, user));
 
+        for (int i = 0; i < room.getMaxTeam(); i++) {
+            Team team = Team.builder()
+                    .room(room)
+                    .teamName("팀명 " + (i + 1))
+                    .isReady(false)
+                    .build();
+            teamRepository.save(team);
+        }
+
         return new RoomRes.CreateRoom(room.getId(), room.getMaxMember(), room.getPwd(), room.getInviteCode(),
                 room.getMaxTeam(), room.getMaxRound(), room.getStatus(), room.getMode(),
                 room.getYearSet(), room.getSeedMoney(), user.getNickName());
