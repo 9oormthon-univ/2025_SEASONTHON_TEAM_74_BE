@@ -19,4 +19,6 @@ public interface RoomService {
     RoomRes.JoinRoom getLobbyInfo(Long roomId, Long userId);
 
     RoomRes.TeamInfo getTeamLobbyInfo(Long roomId, Long teamId, Long userId);
+
+    RoomRes.TeamInfo changeLeader(Long roomId, Long userId, Long teamId);
 }

@@ -73,6 +73,11 @@ public class RoomController {
         return ApiResponse.onSuccess(roomService.getTeamLobbyInfo(roomId, teamId, userId));
     }
 
+    @PatchMapping("/{roomId}/{teamId}/leader")
+    public ApiResponse<RoomRes.TeamInfo> changeLeader(@PathVariable Long roomId, @PathVariable Long teamId) {
+        Long userId = jwtTokenProvider.getUserIdFromToken();
 
+        return ApiResponse.onSuccess(roomService.changeLeader(roomId, userId, teamId));
+    }
 
 }

@@ -247,4 +247,50 @@ public class RoomServiceImpl implements RoomService {
         return new RoomRes.TeamInfo(team.getId(), team.getTeamName(), leaderMap, memberList);
 
     }
+
+    @Override
+    public RoomRes.TeamInfo changeLeader(Long roomId, Long userId, Long teamId) {
+
+        if(!teamMemberRepository.existsByRoomIdAndUserId(roomId, userId)){
+            throw new RuntimeException("방에 참가하지 않은 유저입니다.");
+        }
+
+        Team team = teamRepository.findById(teamId).orElseThrow(() -> new RuntimeException("Team not found"));
+
+        TeamMember teamMember = teamMemberRepository.findByUserIdAndRoomId(userId, roomId).orElseThrow(() -> new RuntimeException("TeamMember not found"));
+        if(teamMember.getIsLeader()){
+            throw new RuntimeException("이미 리더입니다.");
+        }
+        if(teamMemberRepository.existsByTeamIdAndRoomIdAndIsLeader(teamId, roomId, true)){
+            throw new RuntimeException("팀에 리더가 두명입니다.");
+        }
+        teamMember.setIsLeader(true);
+        teamMember.setTeam(team);
+        teamMemberRepository.save(teamMember);
+
+        List<TeamMember> teamMembers = teamMemberRepository.findAllByTeamIdAndRoomId(teamId, roomId);
+
+        TeamMember leader = teamMembers.stream()
+                .filter(TeamMember::getIsLeader)
+                .findFirst()
+                .orElse(null);
+
+        List<TeamMember> members = teamMembers.stream()
+                .filter(tm -> !tm.getIsLeader())
+                .toList();
+
+
+        Map<String, Boolean> leaderMap = new HashMap<>();
+        if(leader != null){
+            leaderMap.put(Objects.requireNonNull(leader).getUser().getNickName(), leader.getIsReady());
+        }
+        List<Map<String, Boolean>> memberList = new ArrayList<>();
+        for (TeamMember member : members) {
+            Map<String, Boolean> memberMap = new HashMap<>();
+            memberMap.put(member.getUser().getNickName(), member.getIsReady());
+            memberList.add(memberMap);
+        }
+
+        return new RoomRes.TeamInfo(team.getId(), team.getTeamName(), leaderMap, memberList);
+    }
 }
