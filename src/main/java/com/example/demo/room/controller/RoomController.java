@@ -8,6 +8,7 @@ import com.example.demo.room.service.RoomService;
 import com.example.demo.room.service.RoomServiceImpl;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.hibernate.annotations.Fetch;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -55,6 +56,7 @@ public class RoomController {
         return ApiResponse.onSuccess("방 제거 성공");
     }
 
+    //로비 조회
     @GetMapping("/{roomId}/lobby")
     public ApiResponse<RoomRes.JoinRoom> getLobbyInfo(@PathVariable Long roomId) {
         //로비 정보 조회 기능 구현 필요
@@ -62,5 +64,15 @@ public class RoomController {
 
         return ApiResponse.onSuccess(roomService.getLobbyInfo(roomId, userId));
     }
+
+    //팀 대기실 조회
+    @GetMapping("/{roomId}/{teamId}")
+    public ApiResponse<RoomRes.TeamInfo> getTeamLobbyInfo(@PathVariable Long roomId, @PathVariable Long teamId) {
+        Long userId = jwtTokenProvider.getUserIdFromToken();
+
+        return ApiResponse.onSuccess(roomService.getTeamLobbyInfo(roomId, teamId, userId));
+    }
+
+
 
 }

@@ -19,10 +19,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -115,7 +112,7 @@ public class RoomServiceImpl implements RoomService {
                 .map(team -> {
 
                     // 3. 각 팀의 멤버들을 조회합니다. (N회 쿼리 발생)
-                    List<TeamMember> teamMembers = teamMemberRepository.findAllByTeamId(team.getId());
+                    List<TeamMember> teamMembers = teamMemberRepository.findAllByTeamIdAndRoomId(team.getId(), room.getId());
 
                     Map<Boolean, List<String>> partitionedNicknames = teamMembers.stream()
                             .collect(Collectors.partitioningBy(
@@ -185,7 +182,7 @@ public class RoomServiceImpl implements RoomService {
                 .map(team -> {
 
                     // 3. 각 팀의 멤버들을 조회
-                    List<TeamMember> teamMembers = teamMemberRepository.findAllByTeamId(team.getId());
+                    List<TeamMember> teamMembers = teamMemberRepository.findAllByTeamIdAndRoomId(team.getId(), roomId);
 
                     Map<Boolean, List<String>> partitionedNicknames = teamMembers.stream()
                             .collect(Collectors.partitioningBy(
@@ -214,5 +211,40 @@ public class RoomServiceImpl implements RoomService {
 
 
         return new RoomRes.JoinRoom(roomId, user.getNickName(), teamDetails);
+    }
+
+    @Override
+    public RoomRes.TeamInfo getTeamLobbyInfo(Long roomId, Long teamId, Long userId) {
+
+        if(!teamMemberRepository.existsByRoomIdAndUserId(roomId, userId)){
+            throw new RuntimeException("방에 참가하지 않은 유저입니다.");
+        }
+
+        Team team = teamRepository.findById(teamId).orElseThrow(() -> new RuntimeException("Team not found"));
+        List<TeamMember> teamMembers = teamMemberRepository.findAllByTeamIdAndRoomId(teamId, roomId);
+
+        TeamMember leader = teamMembers.stream()
+                .filter(TeamMember::getIsLeader)
+                .findFirst()
+                .orElse(null);
+
+        List<TeamMember> members = teamMembers.stream()
+                .filter(tm -> !tm.getIsLeader())
+                .toList();
+
+
+        Map<String, Boolean> leaderMap = new HashMap<>();
+        if(leader != null){
+            leaderMap.put(Objects.requireNonNull(leader).getUser().getNickName(), leader.getIsReady());
+        }
+        List<Map<String, Boolean>> memberList = new ArrayList<>();
+        for (TeamMember member : members) {
+            Map<String, Boolean> memberMap = new HashMap<>();
+            memberMap.put(member.getUser().getNickName(), member.getIsReady());
+            memberList.add(memberMap);
+        }
+
+        return new RoomRes.TeamInfo(team.getId(), team.getTeamName(), leaderMap, memberList);
+
     }
 }

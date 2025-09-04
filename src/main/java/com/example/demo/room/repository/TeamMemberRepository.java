@@ -22,4 +22,6 @@ public interface TeamMemberRepository extends JpaRepository<TeamMember,Long> {
     void deleteAllByRoomId(Long roomId);
 
     Boolean existsByRoomIdAndUserId(Long roomId, Long userId);
+
+    List<TeamMember> findAllByTeamIdAndRoomId(Long teamId, Long roomId);
 }

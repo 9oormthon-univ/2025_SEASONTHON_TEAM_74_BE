@@ -4,6 +4,7 @@ import com.example.demo.room.entity.enums.Mode;
 import com.example.demo.room.entity.enums.RoomStatus;
 
 import java.util.List;
+import java.util.Map;
 
 public class RoomRes {
 
@@ -15,4 +16,6 @@ public class RoomRes {
             String yearSet, Integer seedMoney, String nickName) {}
 
     public record JoinRoom(Long roomId, String nickName, List<TeamRes.TeamDetail> teamDetail) {}
+
+    public record TeamInfo(Long teamId, String teamName, Map<String, Boolean> leader, List<Map<String, Boolean>> members) {}
 }
