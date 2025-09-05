@@ -1,0 +1,16 @@
+.git
+.gitignore
+README.md
+.env
+.env.example
+Dockerfile
+docker-compose.yml
+deploy.sh
+.gradle
+gradle/
+gradlew
+gradlew.bat
+build/
+!build/libs/
+src/
+.DS_Store
