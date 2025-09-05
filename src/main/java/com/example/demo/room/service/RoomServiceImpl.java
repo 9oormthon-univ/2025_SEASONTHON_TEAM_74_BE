@@ -16,6 +16,7 @@ import com.example.demo.user.entity.User;
 import com.example.demo.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.messaging.simp.SimpMessageSendingOperations;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -32,6 +33,7 @@ public class RoomServiceImpl implements RoomService {
     private final UserRepository userRepository;
     private final TeamMemberRepository teamMemberRepository;
     private final TeamRepository teamRepository;
+    private final TeamService teamService;
 
     @Override
     public RoomRes.InviteCode createInviteCode() {
@@ -107,7 +109,6 @@ public class RoomServiceImpl implements RoomService {
         teamMemberRepository.save(teamMember);
 
         List<Team> teams = teamRepository.findAllByRoomId(room.getId());
-
         List<TeamRes.TeamDetail> teamDetails = teams.stream()
                 .map(team -> {
 
@@ -154,6 +155,7 @@ public class RoomServiceImpl implements RoomService {
             room.setStatus(RoomStatus.ENDED);
             roomRepository.save(room);
         }
+        teamService.sendLobbyUpdate(roomId, user.getNickName());
     }
 
     @Override
@@ -251,7 +253,7 @@ public class RoomServiceImpl implements RoomService {
     @Override
     public RoomRes.TeamInfo changeRole(Long roomId, Long userId, Long teamId, Boolean isLeader) {
 
-
+        User user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
         //팀이 존재하는지 확인
         Team team = teamRepository.findByIdAndRoomId(teamId,roomId).orElseThrow(() -> new RuntimeException("Team not found"));
         TeamMember teamMember = teamMemberRepository.findByRoomIdAndUserId(roomId, userId).orElseThrow(() -> new RuntimeException("방에 참가하지 않은 유저입니다."));
@@ -297,6 +299,8 @@ public class RoomServiceImpl implements RoomService {
             memberMap.put(member.getUser().getNickName(), member.getIsReady());
             memberList.add(memberMap);
         }
+
+        teamService.sendLobbyUpdate(roomId, user.getNickName());
 
         return new RoomRes.TeamInfo(team.getId(), team.getTeamName(), leaderMap, memberList);
     }
@@ -354,6 +358,8 @@ public class RoomServiceImpl implements RoomService {
             memberList.add(memberMap);
         }
 
+        teamService.sendLobbyUpdate(roomId, user.getNickName());
+
         return new RoomRes.TeamInfo(team.getId(), team.getTeamName(), leaderMap, memberList);
     }
 
@@ -384,6 +390,8 @@ public class RoomServiceImpl implements RoomService {
         team.setIsReady(true);
         teamRepository.save(team);
 
+        teamService.sendLobbyUpdate(roomId, user.getNickName());
+
         return "팀 확정을 완료하였습니다.";
     }
 
@@ -403,6 +411,8 @@ public class RoomServiceImpl implements RoomService {
         teamMember.setIsLeader(false);
         teamMember.setIsReady(false);
         teamMemberRepository.save(teamMember);
+
+        teamService.sendLobbyUpdate(roomId, user.getNickName());
 
         return "팀에서 나갔습니다.";
     }
