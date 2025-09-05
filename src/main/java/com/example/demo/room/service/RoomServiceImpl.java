@@ -19,10 +19,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -115,7 +112,7 @@ public class RoomServiceImpl implements RoomService {
                 .map(team -> {
 
                     // 3. 각 팀의 멤버들을 조회합니다. (N회 쿼리 발생)
-                    List<TeamMember> teamMembers = teamMemberRepository.findAllByTeamId(team.getId());
+                    List<TeamMember> teamMembers = teamMemberRepository.findAllByTeamIdAndRoomId(team.getId(), room.getId());
 
                     Map<Boolean, List<String>> partitionedNicknames = teamMembers.stream()
                             .collect(Collectors.partitioningBy(
@@ -169,5 +166,244 @@ public class RoomServiceImpl implements RoomService {
         teamMemberRepository.deleteAllByRoomId(roomId);
         teamRepository.deleteAllByRoomId(roomId);
         roomRepository.save(room);
+    }
+
+    @Override
+    public RoomRes.JoinRoom getLobbyInfo(Long roomId, Long userId) {
+        User user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
+
+        if(!teamMemberRepository.existsByRoomIdAndUserId(roomId, userId)){
+            throw new RuntimeException("방에 참가하지 않은 유저입니다.");
+        }
+
+        List<Team> teams = teamRepository.findAllByRoomId(roomId);
+
+        List<TeamRes.TeamDetail> teamDetails = teams.stream()
+                .map(team -> {
+
+                    // 3. 각 팀의 멤버들을 조회
+                    List<TeamMember> teamMembers = teamMemberRepository.findAllByTeamIdAndRoomId(team.getId(), roomId);
+
+                    Map<Boolean, List<String>> partitionedNicknames = teamMembers.stream()
+                            .collect(Collectors.partitioningBy(
+                                    TeamMember::getIsLeader,
+                                    Collectors.mapping(
+                                            tm -> tm.getUser().getNickName(),
+                                            Collectors.toList()
+                                    )
+                            ));
+
+                    List<String> memberNicknames = partitionedNicknames.get(false); // isLeader가 false인 사람들
+                    String leaderNickname = partitionedNicknames.get(true).stream()
+                            .findFirst()
+                            .orElse(null); // isLeader가 true인 사람 (단 한 명이라고 가정)
+
+                    // 4. TeamDetail 레코드를 생성하여 반환
+                    return new TeamRes.TeamDetail(
+                            team.getId(),
+                            team.getTeamName(),
+                            team.getIsReady(),
+                            leaderNickname,
+                            memberNicknames
+                    );
+                })
+                .toList(); // 최종적으로 List<TeamDetail>을 반환
+
+
+        return new RoomRes.JoinRoom(roomId, user.getNickName(), teamDetails);
+    }
+
+    @Override
+    public RoomRes.TeamInfo getTeamLobbyInfo(Long roomId, Long teamId, Long userId) {
+
+        if(!teamMemberRepository.existsByRoomIdAndUserId(roomId, userId)){
+            throw new RuntimeException("방에 참가하지 않은 유저입니다.");
+        }
+
+        Team team = teamRepository.findByIdAndRoomId(teamId, roomId).orElseThrow(() -> new RuntimeException("Team not found"));
+        List<TeamMember> teamMembers = teamMemberRepository.findAllByTeamIdAndRoomId(teamId, roomId);
+
+        TeamMember leader = teamMembers.stream()
+                .filter(TeamMember::getIsLeader)
+                .findFirst()
+                .orElse(null);
+
+        List<TeamMember> members = teamMembers.stream()
+                .filter(tm -> !tm.getIsLeader())
+                .toList();
+
+
+        Map<String, Boolean> leaderMap = new HashMap<>();
+        if(leader != null){
+            leaderMap.put(Objects.requireNonNull(leader).getUser().getNickName(), leader.getIsReady());
+        }
+        List<Map<String, Boolean>> memberList = new ArrayList<>();
+        for (TeamMember member : members) {
+            Map<String, Boolean> memberMap = new HashMap<>();
+            memberMap.put(member.getUser().getNickName(), member.getIsReady());
+            memberList.add(memberMap);
+        }
+
+        return new RoomRes.TeamInfo(team.getId(), team.getTeamName(), leaderMap, memberList);
+
+    }
+
+    @Override
+    public RoomRes.TeamInfo changeRole(Long roomId, Long userId, Long teamId, Boolean isLeader) {
+
+
+        //팀이 존재하는지 확인
+        Team team = teamRepository.findByIdAndRoomId(teamId,roomId).orElseThrow(() -> new RuntimeException("Team not found"));
+        TeamMember teamMember = teamMemberRepository.findByRoomIdAndUserId(roomId, userId).orElseThrow(() -> new RuntimeException("방에 참가하지 않은 유저입니다."));
+        Integer count = teamMemberRepository.countByRoomIdAndTeamId(roomId, teamId);
+        if(count >= 6){
+            throw new RuntimeException("정원 초과입니다. (최대 6명)");
+        }
+        if(isLeader) {
+            if (teamMemberRepository.existsByTeamIdAndRoomIdAndIsLeader(teamId, roomId, true)) {
+                throw new RuntimeException("팀에 리더가 존재합니다.");
+            }
+            if(teamMember.getIsLeader()){
+                throw new RuntimeException("이미 팀장입니다.");
+            }
+            teamMember.setIsLeader(true);
+        }else{
+            if (!teamMember.getIsLeader() && Objects.equals(teamMember.getTeam().getId(), team.getId())) {
+                throw new RuntimeException("이미 팀원입니다.");
+            }
+            teamMember.setIsLeader(false);
+        }
+        teamMember.setTeam(team);
+        teamMemberRepository.save(teamMember);
+
+        List<TeamMember> teamMembers = teamMemberRepository.findAllByTeamIdAndRoomId(teamId, roomId);
+
+        TeamMember leader = teamMembers.stream()
+                .filter(TeamMember::getIsLeader)
+                .findFirst()
+                .orElse(null);
+
+        List<TeamMember> members = teamMembers.stream()
+                .filter(tm -> !tm.getIsLeader())
+                .toList();
+
+        Map<String, Boolean> leaderMap = new HashMap<>();
+        if(leader != null){
+            leaderMap.put(Objects.requireNonNull(leader).getUser().getNickName(), leader.getIsReady());
+        }
+        List<Map<String, Boolean>> memberList = new ArrayList<>();
+        for (TeamMember member : members) {
+            Map<String, Boolean> memberMap = new HashMap<>();
+            memberMap.put(member.getUser().getNickName(), member.getIsReady());
+            memberList.add(memberMap);
+        }
+
+        return new RoomRes.TeamInfo(team.getId(), team.getTeamName(), leaderMap, memberList);
+    }
+
+    @Override
+    public String readyTeamMember(Long roomId, Long userId) {
+
+        TeamMember teamMember = teamMemberRepository.findByRoomIdAndUserId(roomId, userId).orElseThrow(() -> new RuntimeException("방에 참가하지 않은 유저입니다."));
+
+        if(teamMember.getTeam() == null) throw new RuntimeException("팀에 속해있지 않습니다.");
+
+        teamMember.setIsReady(!teamMember.getIsReady());
+        teamMemberRepository.save(teamMember);
+
+        return teamMember.getIsReady() ? "준비 완료되었습니다." : "준비 취소되었습니다.";
+
+    }
+
+    @Override
+    public RoomRes.TeamInfo changeTeamName(Long roomId, Long teamId, Long userId, RoomReq.ChangeTeamName request) {
+
+        User user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
+        if(!teamMemberRepository.existsByRoomIdAndUserId(roomId, userId)){
+            throw new RuntimeException("방에 참가하지 않은 유저입니다.");
+        }
+        Team team = teamRepository.findByIdAndRoomId(teamId, roomId).orElseThrow(() -> new RuntimeException("Team not found"));
+        // 팀 멤버 조회후 리더인지 확인
+        // 리더가 아니면 변경 불가능
+        teamMemberRepository.findByUserIdAndRoomIdAndTeamId(userId, roomId, teamId)
+                .filter(TeamMember::getIsLeader)
+                .orElseThrow(() -> new RuntimeException("팀장이 아닙니다."));
+
+        team.setTeamName(request.getTeamName());
+        teamRepository.save(team);
+
+        List<TeamMember> teamMembers = teamMemberRepository.findAllByTeamIdAndRoomId(teamId, roomId);
+
+        TeamMember leader = teamMembers.stream()
+                .filter(TeamMember::getIsLeader)
+                .findFirst()
+                .orElse(null);
+
+        List<TeamMember> members = teamMembers.stream()
+                .filter(tm -> !tm.getIsLeader())
+                .toList();
+
+        Map<String, Boolean> leaderMap = new HashMap<>();
+        if(leader != null){
+            leaderMap.put(Objects.requireNonNull(leader).getUser().getNickName(), leader.getIsReady());
+        }
+        List<Map<String, Boolean>> memberList = new ArrayList<>();
+        for (TeamMember member : members) {
+            Map<String, Boolean> memberMap = new HashMap<>();
+            memberMap.put(member.getUser().getNickName(), member.getIsReady());
+            memberList.add(memberMap);
+        }
+
+        return new RoomRes.TeamInfo(team.getId(), team.getTeamName(), leaderMap, memberList);
+    }
+
+    @Override
+    public String confirmTeam(Long roomId, Long teamId, Long userId) {
+        User user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
+        if(!teamMemberRepository.existsByRoomIdAndUserId(roomId, userId)){
+            throw new RuntimeException("방에 참가하지 않은 유저입니다.");
+        }
+        Team team = teamRepository.findByIdAndRoomId(teamId, roomId).orElseThrow(() -> new RuntimeException("Team not found"));
+
+        if(team.getIsReady()){
+            throw new RuntimeException("이미 확정된 팀입니다.");
+        }
+
+        //리더인지 확인
+        teamMemberRepository.findByUserIdAndRoomIdAndTeamId(userId, roomId, teamId)
+                .filter(TeamMember::getIsLeader)
+                .orElseThrow(() -> new RuntimeException("팀장이 아닙니다."));
+
+        //모든 팀원이 레디했는지 확인
+        teamMemberRepository.findAllByTeamIdAndRoomIdAndIsLeaderFalse(teamId, roomId).forEach(tm -> {
+            if(!tm.getIsReady()){
+                throw new RuntimeException(" 팀원이 준비하지 않았습니다.");
+            }
+        });
+
+        team.setIsReady(true);
+        teamRepository.save(team);
+
+        return "팀 확정을 완료하였습니다.";
+    }
+
+    @Override
+    public String leaveTeam(Long roomId, Long teamId, Long userId) {
+        User user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
+        if(!teamMemberRepository.existsByRoomIdAndUserId(roomId, userId)){
+            throw new RuntimeException("방에 참가하지 않은 유저입니다.");
+        }
+        Team team = teamRepository.findByIdAndRoomId(teamId, roomId).orElseThrow(() -> new RuntimeException("Team not found"));
+        TeamMember teamMember = teamMemberRepository.findByUserIdAndRoomIdAndTeamId(userId, roomId, teamId).orElseThrow(() -> new RuntimeException("팀에 속해있지 않습니다."));
+
+        if(team.getIsReady()){
+            throw new RuntimeException("확정된 팀은 나갈 수 없습니다.");
+        }
+        teamMember.setTeam(null);
+        teamMember.setIsLeader(false);
+        teamMember.setIsReady(false);
+        teamMemberRepository.save(teamMember);
+
+        return "팀에서 나갔습니다.";
     }
 }

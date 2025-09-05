@@ -15,4 +15,18 @@ public interface RoomService {
     void leaveRoom(Long roomId, Long userId);
 
     void removeRoom(Long roomId, Long userId);
+
+    RoomRes.JoinRoom getLobbyInfo(Long roomId, Long userId);
+
+    RoomRes.TeamInfo getTeamLobbyInfo(Long roomId, Long teamId, Long userId);
+
+    RoomRes.TeamInfo changeRole(Long roomId, Long userId, Long teamId, Boolean isLeader);
+
+    String readyTeamMember(Long roomId, Long userId);
+
+    RoomRes.TeamInfo changeTeamName(Long roomId, Long teamId, Long userId, RoomReq.ChangeTeamName request);
+
+    String confirmTeam(Long roomId, Long teamId, Long userId);
+
+    String leaveTeam(Long roomId, Long teamId ,Long userId);
 }

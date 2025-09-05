@@ -8,6 +8,7 @@ import com.example.demo.room.service.RoomService;
 import com.example.demo.room.service.RoomServiceImpl;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.hibernate.annotations.Fetch;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -53,6 +54,71 @@ public class RoomController {
         Long userId = jwtTokenProvider.getUserIdFromToken();
         roomService.removeRoom(roomId, userId);
         return ApiResponse.onSuccess("방 제거 성공");
+    }
+
+    //로비 조회
+    @GetMapping("/{roomId}/lobby")
+    public ApiResponse<RoomRes.JoinRoom> getLobbyInfo(@PathVariable Long roomId) {
+        //로비 정보 조회 기능 구현 필요
+        Long userId = jwtTokenProvider.getUserIdFromToken();
+
+        return ApiResponse.onSuccess(roomService.getLobbyInfo(roomId, userId));
+    }
+
+    //팀 대기실 조회
+    @GetMapping("/{roomId}/{teamId}")
+    public ApiResponse<RoomRes.TeamInfo> getTeamLobbyInfo(@PathVariable Long roomId, @PathVariable Long teamId) {
+        Long userId = jwtTokenProvider.getUserIdFromToken();
+
+        return ApiResponse.onSuccess(roomService.getTeamLobbyInfo(roomId, teamId, userId));
+    }
+
+    //팀장하기
+    @PatchMapping("/{roomId}/{teamId}/leader")
+    public ApiResponse<RoomRes.TeamInfo> changeLeader(@PathVariable Long roomId, @PathVariable Long teamId) {
+        Long userId = jwtTokenProvider.getUserIdFromToken();
+
+        return ApiResponse.onSuccess(roomService.changeRole(roomId, userId, teamId, true));
+    }
+
+    //팀원하기
+    @PatchMapping("/{roomId}/{teamId}/member")
+    public ApiResponse<RoomRes.TeamInfo> changeMember(@PathVariable Long roomId, @PathVariable Long teamId) {
+        Long userId = jwtTokenProvider.getUserIdFromToken();
+
+        return ApiResponse.onSuccess(roomService.changeRole(roomId, userId, teamId, false));
+    }
+
+    //팀원 준비
+    @PatchMapping("/{roomId}/me/ready")
+    public ApiResponse<String> changeReady(@PathVariable Long roomId) {
+        Long userId = jwtTokenProvider.getUserIdFromToken();
+        String message = roomService.readyTeamMember(roomId, userId);
+        return ApiResponse.onSuccess(message);
+    }
+
+    //팀명 짓기
+    @PatchMapping("/{roomId}/{teamId}/teamname")
+    public ApiResponse<RoomRes.TeamInfo> changeTeamName(@PathVariable Long roomId, @PathVariable Long teamId, @RequestBody RoomReq.ChangeTeamName request) {
+        Long userId = jwtTokenProvider.getUserIdFromToken();
+        //팀명 변경 기능 구현 필요
+        return ApiResponse.onSuccess(roomService.changeTeamName(roomId, teamId, userId, request));
+    }
+
+    //팀 확정
+    @PatchMapping("/{roomId}/{teamId}/confirm")
+    public ApiResponse<String> confirmTeam(@PathVariable Long roomId, @PathVariable Long teamId) {
+        Long userId = jwtTokenProvider.getUserIdFromToken();
+        String message = roomService.confirmTeam(roomId, teamId, userId);
+        return ApiResponse.onSuccess(message);
+    }
+
+    //팀 나가기
+    @DeleteMapping("/{roomId}/{teamId}/me")
+    public ApiResponse<String> leaveTeam(@PathVariable Long roomId, @PathVariable Long teamId) {
+        Long userId = jwtTokenProvider.getUserIdFromToken();
+        //팀 나가기 기능 구현 필요
+        return ApiResponse.onSuccess(roomService.leaveTeam(roomId, teamId ,userId));
     }
 
 }

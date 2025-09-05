@@ -3,13 +3,11 @@ package com.example.demo.room.entity;
 import com.example.demo.user.entity.User;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 @Entity
 @Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
@@ -35,5 +33,9 @@ public class TeamMember {
     @NotNull
     @Column(name = "is_leader", nullable = false)
     private Boolean isLeader;
+
+    @NotNull
+    @Column(name = "is_ready", nullable = false)
+    private Boolean isReady = false;
 
 }
