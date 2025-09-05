@@ -356,4 +356,34 @@ public class RoomServiceImpl implements RoomService {
 
         return new RoomRes.TeamInfo(team.getId(), team.getTeamName(), leaderMap, memberList);
     }
+
+    @Override
+    public String confirmTeam(Long roomId, Long teamId, Long userId) {
+        User user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
+        if(!teamMemberRepository.existsByRoomIdAndUserId(roomId, userId)){
+            throw new RuntimeException("방에 참가하지 않은 유저입니다.");
+        }
+        Team team = teamRepository.findByIdAndRoomId(teamId, roomId).orElseThrow(() -> new RuntimeException("Team not found"));
+
+        if(team.getIsReady()){
+            throw new RuntimeException("이미 확정된 팀입니다.");
+        }
+
+        //리더인지 확인
+        teamMemberRepository.findByUserIdAndRoomIdAndTeamId(userId, roomId, teamId)
+                .filter(TeamMember::getIsLeader)
+                .orElseThrow(() -> new RuntimeException("팀장이 아닙니다."));
+
+        //모든 팀원이 레디했는지 확인
+        teamMemberRepository.findAllByTeamIdAndRoomIdAndIsLeaderFalse(teamId, roomId).forEach(tm -> {
+            if(!tm.getIsReady()){
+                throw new RuntimeException(" 팀원이 준비하지 않았습니다.");
+            }
+        });
+
+        team.setIsReady(true);
+        teamRepository.save(team);
+
+        return "팀 확정을 완료하였습니다.";
+    }
 }

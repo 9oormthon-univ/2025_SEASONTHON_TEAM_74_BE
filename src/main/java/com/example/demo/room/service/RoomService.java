@@ -25,4 +25,6 @@ public interface RoomService {
     String readyTeamMember(Long roomId, Long userId);
 
     RoomRes.TeamInfo changeTeamName(Long roomId, Long teamId, Long userId, RoomReq.ChangeTeamName request);
+
+    String confirmTeam(Long roomId, Long teamId, Long userId);
 }

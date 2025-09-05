@@ -105,4 +105,14 @@ public class RoomController {
         return ApiResponse.onSuccess(roomService.changeTeamName(roomId, teamId, userId, request));
     }
 
+    //팀 확정
+    @PatchMapping("/{roomId}/{teamId}/confirm")
+    public ApiResponse<String> confirmTeam(@PathVariable Long roomId, @PathVariable Long teamId) {
+        Long userId = jwtTokenProvider.getUserIdFromToken();
+        String message = roomService.confirmTeam(roomId, teamId, userId);
+        return ApiResponse.onSuccess(message);
+    }
+
+
+
 }
