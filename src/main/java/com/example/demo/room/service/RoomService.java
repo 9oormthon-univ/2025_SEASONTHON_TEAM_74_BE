@@ -27,4 +27,6 @@ public interface RoomService {
     RoomRes.TeamInfo changeTeamName(Long roomId, Long teamId, Long userId, RoomReq.ChangeTeamName request);
 
     String confirmTeam(Long roomId, Long teamId, Long userId);
+
+    String leaveTeam(Long roomId, Long teamId ,Long userId);
 }

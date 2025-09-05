@@ -113,6 +113,12 @@ public class RoomController {
         return ApiResponse.onSuccess(message);
     }
 
-
+    //팀 나가기
+    @DeleteMapping("/{roomId}/{teamId}/me")
+    public ApiResponse<String> leaveTeam(@PathVariable Long roomId, @PathVariable Long teamId) {
+        Long userId = jwtTokenProvider.getUserIdFromToken();
+        //팀 나가기 기능 구현 필요
+        return ApiResponse.onSuccess(roomService.leaveTeam(roomId, teamId ,userId));
+    }
 
 }

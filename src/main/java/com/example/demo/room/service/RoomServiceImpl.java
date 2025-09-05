@@ -386,4 +386,24 @@ public class RoomServiceImpl implements RoomService {
 
         return "팀 확정을 완료하였습니다.";
     }
+
+    @Override
+    public String leaveTeam(Long roomId, Long teamId, Long userId) {
+        User user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
+        if(!teamMemberRepository.existsByRoomIdAndUserId(roomId, userId)){
+            throw new RuntimeException("방에 참가하지 않은 유저입니다.");
+        }
+        Team team = teamRepository.findByIdAndRoomId(teamId, roomId).orElseThrow(() -> new RuntimeException("Team not found"));
+        TeamMember teamMember = teamMemberRepository.findByUserIdAndRoomIdAndTeamId(userId, roomId, teamId).orElseThrow(() -> new RuntimeException("팀에 속해있지 않습니다."));
+
+        if(team.getIsReady()){
+            throw new RuntimeException("확정된 팀은 나갈 수 없습니다.");
+        }
+        teamMember.setTeam(null);
+        teamMember.setIsLeader(false);
+        teamMember.setIsReady(false);
+        teamMemberRepository.save(teamMember);
+
+        return "팀에서 나갔습니다.";
+    }
 }
