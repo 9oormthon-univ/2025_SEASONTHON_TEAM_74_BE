@@ -314,4 +314,46 @@ public class RoomServiceImpl implements RoomService {
         return teamMember.getIsReady() ? "준비 완료되었습니다." : "준비 취소되었습니다.";
 
     }
+
+    @Override
+    public RoomRes.TeamInfo changeTeamName(Long roomId, Long teamId, Long userId, RoomReq.ChangeTeamName request) {
+
+        User user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
+        if(!teamMemberRepository.existsByRoomIdAndUserId(roomId, userId)){
+            throw new RuntimeException("방에 참가하지 않은 유저입니다.");
+        }
+        Team team = teamRepository.findByIdAndRoomId(teamId, roomId).orElseThrow(() -> new RuntimeException("Team not found"));
+        // 팀 멤버 조회후 리더인지 확인
+        // 리더가 아니면 변경 불가능
+        teamMemberRepository.findByUserIdAndRoomIdAndTeamId(userId, roomId, teamId)
+                .filter(TeamMember::getIsLeader)
+                .orElseThrow(() -> new RuntimeException("팀장이 아닙니다."));
+
+        team.setTeamName(request.getTeamName());
+        teamRepository.save(team);
+
+        List<TeamMember> teamMembers = teamMemberRepository.findAllByTeamIdAndRoomId(teamId, roomId);
+
+        TeamMember leader = teamMembers.stream()
+                .filter(TeamMember::getIsLeader)
+                .findFirst()
+                .orElse(null);
+
+        List<TeamMember> members = teamMembers.stream()
+                .filter(tm -> !tm.getIsLeader())
+                .toList();
+
+        Map<String, Boolean> leaderMap = new HashMap<>();
+        if(leader != null){
+            leaderMap.put(Objects.requireNonNull(leader).getUser().getNickName(), leader.getIsReady());
+        }
+        List<Map<String, Boolean>> memberList = new ArrayList<>();
+        for (TeamMember member : members) {
+            Map<String, Boolean> memberMap = new HashMap<>();
+            memberMap.put(member.getUser().getNickName(), member.getIsReady());
+            memberList.add(memberMap);
+        }
+
+        return new RoomRes.TeamInfo(team.getId(), team.getTeamName(), leaderMap, memberList);
+    }
 }

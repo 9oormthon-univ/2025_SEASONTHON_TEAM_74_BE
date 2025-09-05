@@ -97,4 +97,12 @@ public class RoomController {
         return ApiResponse.onSuccess(message);
     }
 
+    //팀명 짓기
+    @PatchMapping("/{roomId}/{teamId}/teamname")
+    public ApiResponse<RoomRes.TeamInfo> changeTeamName(@PathVariable Long roomId, @PathVariable Long teamId, @RequestBody RoomReq.ChangeTeamName request) {
+        Long userId = jwtTokenProvider.getUserIdFromToken();
+        //팀명 변경 기능 구현 필요
+        return ApiResponse.onSuccess(roomService.changeTeamName(roomId, teamId, userId, request));
+    }
+
 }

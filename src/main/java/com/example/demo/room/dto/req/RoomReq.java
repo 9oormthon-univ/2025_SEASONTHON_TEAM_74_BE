@@ -47,4 +47,11 @@ public class RoomReq {
         private String pwd;
         private String inviteCode;
     }
+
+    @Getter
+    public static class ChangeTeamName {
+        @NotNull(message = "팀 이름은 필수입니다.")
+        private String teamName;
+
+    }
 }
