@@ -1,5 +1,8 @@
 package com.example.demo.room.entity;
 
+import com.example.demo.stock.entity.Orders;
+import com.example.demo.stock.entity.StockHeld;
+import com.example.demo.stock.entity.TeamHistory;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -30,13 +33,19 @@ public class Team {
 
     // 양방향 매핑 (1:N)
     @OneToMany(mappedBy = "team", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<TeamMember> members = new ArrayList<>();
+    private List<TeamMember> members;
 
     @ManyToOne
     @JoinColumn(name = "room_id", nullable = false)
     private Room room;
 
     @OneToMany(mappedBy = "team", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<TeamHistory> teamHistories = new ArrayList<>();
+    private List<TeamHistory> teamHistories;
+
+    @OneToMany(mappedBy = "team", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Orders> orders;
+
+    @OneToMany(mappedBy = "team", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<StockHeld> stockHeldList;
 
 }

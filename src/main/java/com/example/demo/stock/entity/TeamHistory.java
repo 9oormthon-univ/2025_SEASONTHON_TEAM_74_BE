@@ -1,5 +1,6 @@
-package com.example.demo.room.entity;
+package com.example.demo.stock.entity;
 
+import com.example.demo.room.entity.Team;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -19,7 +20,15 @@ public class TeamHistory {
     @Column(name = "team_history_id")
     private Long id;
 
+    @Column
+    private Integer money;
+
     @ManyToOne
     @JoinColumn(name = "team_id", nullable = false)
     private Team team;
+
+    @ManyToOne
+    @JoinColumn(name = "round_id", nullable = false)
+    private Round round;
+
 }

@@ -3,6 +3,7 @@ package com.example.demo.room.entity;
 import com.example.demo.global.BaseEntity;
 import com.example.demo.room.entity.enums.Mode;
 import com.example.demo.room.entity.enums.RoomStatus;
+import com.example.demo.stock.entity.Round;
 import com.example.demo.user.entity.User;
 import jakarta.persistence.*;
 import lombok.*;
@@ -61,5 +62,9 @@ public class Room extends BaseEntity {
 
     @OneToMany(mappedBy = "room", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<TeamMember> teamMembers = new ArrayList<>();
+
+    @OneToMany(mappedBy = "room", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Round> rounds;
+
 
 }

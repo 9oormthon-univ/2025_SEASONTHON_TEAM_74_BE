@@ -6,14 +6,13 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @Entity
 @Getter
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
 @Table(name = "instrument")
 public class Instrument {
 
@@ -23,30 +22,13 @@ public class Instrument {
     private Long id;
 
     @Column
-    private String name;
+    private String affiliate;
 
-    @Column
-    private String symbol;
-
-    @Column(name = "currency_code")
-    private String currencyCode;
-
-    @Column(name = "exchange_code")
-    private String exchangeCode;
-
-    @ManyToOne
-    @JoinColumn(name = "industry_id")
-    private Industry industry;
+    @Column(name = "ui_label")
+    private String uiLabel;
 
     @OneToMany(mappedBy = "instrument", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<PriceYear> priceYearList = new ArrayList<>();
-
-    @OneToMany(mappedBy = "instrument", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<ScenarioInstrument> scenarioInstrumentList = new ArrayList<>();
-
-
-
-
+    private List<YearInstrument> yearInstruments;
 
 
 }
