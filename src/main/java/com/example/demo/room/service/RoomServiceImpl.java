@@ -246,6 +246,8 @@ public class RoomServiceImpl implements RoomService {
             memberList.add(memberMap);
         }
 
+        teamService.sendTeamUpdate(roomId, teamId);
+
         return new RoomRes.TeamInfo(team.getId(), team.getTeamName(), leaderMap, memberList);
 
     }
@@ -301,6 +303,7 @@ public class RoomServiceImpl implements RoomService {
         }
 
         teamService.sendLobbyUpdate(roomId, user.getNickName());
+        teamService.sendTeamUpdate(roomId, teamId);
 
         return new RoomRes.TeamInfo(team.getId(), team.getTeamName(), leaderMap, memberList);
     }
@@ -314,6 +317,7 @@ public class RoomServiceImpl implements RoomService {
 
         teamMember.setIsReady(!teamMember.getIsReady());
         teamMemberRepository.save(teamMember);
+        teamService.sendTeamUpdate(roomId, teamMember.getTeam().getId());
 
         return teamMember.getIsReady() ? "준비 완료되었습니다." : "준비 취소되었습니다.";
 
@@ -359,6 +363,7 @@ public class RoomServiceImpl implements RoomService {
         }
 
         teamService.sendLobbyUpdate(roomId, user.getNickName());
+        teamService.sendTeamUpdate(roomId, teamId);
 
         return new RoomRes.TeamInfo(team.getId(), team.getTeamName(), leaderMap, memberList);
     }
@@ -391,6 +396,7 @@ public class RoomServiceImpl implements RoomService {
         teamRepository.save(team);
 
         teamService.sendLobbyUpdate(roomId, user.getNickName());
+        teamService.sendTeamUpdate(roomId, teamId);
 
         return "팀 확정을 완료하였습니다.";
     }
@@ -413,7 +419,7 @@ public class RoomServiceImpl implements RoomService {
         teamMemberRepository.save(teamMember);
 
         teamService.sendLobbyUpdate(roomId, user.getNickName());
-
+        teamService.sendTeamUpdate(roomId, teamId);
         return "팀에서 나갔습니다.";
     }
 }

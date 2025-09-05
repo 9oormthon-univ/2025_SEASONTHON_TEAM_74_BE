@@ -67,7 +67,40 @@ public class TeamService {
         log.info("{} 전체 로비 조회:", roomId);
     }
 
+    public void sendTeamUpdate(Long roomId, Long teamId) {
+        String destination = "/topic/room/" + roomId + "/team/" + teamId; // roomId를 사용하여 토픽 경로를 동적으로 생성
 
+        Team team = teamRepository.findById(teamId).orElseThrow();
+        List<TeamMember> teamMembers = teamMemberRepository.findAllByTeamIdAndRoomId(teamId, roomId);
+
+        Map<Boolean, List<String>> partitionedNicknames = teamMembers.stream()
+                .collect(Collectors.partitioningBy(
+                        TeamMember::getIsLeader,
+                        Collectors.mapping(
+                                tm -> tm.getUser().getNickName(),
+                                Collectors.toList()
+                        )
+                ));
+
+        List<Map<String, Boolean>> members = partitionedNicknames.get(false).stream()
+                .map(nickName -> Map.of(nickName, false))
+                .collect(Collectors.toList());
+
+        Map<String, Boolean> leader = partitionedNicknames.get(true).stream()
+                .findFirst()
+                .map(nickName -> Map.of(nickName, true))
+                .orElse(Map.of()); // isLeader가 true인 사람 (단 한 명이라고 가정)
+
+        RoomRes.TeamInfo teamInfo = new RoomRes.TeamInfo(
+                team.getId(),
+                team.getTeamName(),
+                leader,
+                members
+        );
+
+        messagingTemplate.convertAndSend(destination, teamInfo);
+        log.info("{} {} 팀 조회:", roomId, teamId);
+    }
 
 
 
