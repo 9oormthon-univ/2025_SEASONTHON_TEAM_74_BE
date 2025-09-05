@@ -1,3 +1,4 @@
+/*
 package com.example.demo.common;
 
 import com.amazonaws.services.s3.AmazonS3;
@@ -31,4 +32,4 @@ public class AmazonS3Manager {
 
         return amazonS3.getUrl(amazonConfig.getBucket(), keyName).toString();
     }
-}
+}*/

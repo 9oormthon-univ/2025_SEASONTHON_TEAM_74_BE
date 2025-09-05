@@ -1,3 +1,4 @@
+/*
 package com.example.demo.global.util;
 
 import com.amazonaws.services.s3.AmazonS3;
@@ -117,3 +118,4 @@ public class AmazonS3Util {
         }
     }
 }
+*/
