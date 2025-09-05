@@ -1,3 +1,4 @@
+/*
 package com.example.demo.common.config;
 
 import com.amazonaws.auth.AWSCredentials;
@@ -48,4 +49,4 @@ public class AmazonConfig {
     public AWSCredentialsProvider awsCredentialsProvider() {
         return new AWSStaticCredentialsProvider(awsCredentials);
     }
-}
+}*/
