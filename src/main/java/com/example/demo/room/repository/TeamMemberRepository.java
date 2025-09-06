@@ -1,12 +1,12 @@
 package com.example.demo.room.repository;
 
-import com.example.demo.room.entity.Room;
 import com.example.demo.room.entity.Team;
 import com.example.demo.room.entity.TeamMember;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
@@ -40,4 +40,7 @@ public interface TeamMemberRepository extends JpaRepository<TeamMember,Long> {
     Optional<TeamMember> findByUserIdAndRoomIdAndTeamId(Long userId, Long roomId, Long teamId);
 
     List<TeamMember> findAllByTeamIdAndRoomIdAndIsLeaderFalse(Long teamId, Long roomId);
+
+    @Query("SELECT tm.team FROM TeamMember tm WHERE tm.user.id = :userId AND tm.room.id = :roomId")
+    Optional<Team> findTeamByUserIdAndRoomId(@Param("userId") Long userId, @Param("roomId") Long roomId);
 }

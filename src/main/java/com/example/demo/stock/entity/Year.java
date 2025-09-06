@@ -18,7 +18,7 @@ public class Year {
 
     @Id
     @Column(name = "year_id", nullable = false)
-    private Integer yearId;
+    private Long yearId;
 
     @Column(name = "hint1")
     private String hint1;

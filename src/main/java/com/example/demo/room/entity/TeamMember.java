@@ -2,7 +2,6 @@ package com.example.demo.room.entity;
 
 import com.example.demo.user.entity.User;
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
 @Entity
