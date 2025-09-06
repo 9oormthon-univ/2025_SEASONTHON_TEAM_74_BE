@@ -34,6 +34,7 @@ public class StockServiceImpl implements StockService {
     private final YearInstrumentRepository yearInstrumentRepository;
     private final StockHeldRepository stockHeldRepository;
     private final OrdersRepository ordersRepository;
+    private final StockWebSocketService stockWebSocketService;
 
     @Override
     @Transactional(readOnly = true)
@@ -79,13 +80,15 @@ public class StockServiceImpl implements StockService {
         debitTeamAsset(teamForUpdate, serverPrice * requestQty);
         updateStockPosition(teamForUpdate, yearInstrument, order, requestQty);
         
+        // 6. 실시간 업데이트 브로드캐스트
+        stockWebSocketService.broadcastOrderExecution(order, teamForUpdate, roomId, yearInstrument);
+        
         return OrderResponse.of(
                 order, teamForUpdate, Side.BUY,
                 serverPrice, requestQty,
                 request.instrumentId()
         );
     }
-
 
     @Override
     public OrderResponse sellStock(Long userId, Long roomId, OrderSellRequest request) {
@@ -110,6 +113,9 @@ public class StockServiceImpl implements StockService {
         // 5. 자산 및 포지션 업데이트
         creditTeamAsset(teamForUpdate, serverPrice * requestQty);
         updateStockPositionForSell(heldStock, requestQty);
+        
+        // 6. 실시간 업데이트 브로드캐스트
+        stockWebSocketService.broadcastOrderExecution(order, teamForUpdate, roomId, yearInstrument);
         
         return OrderResponse.of(
                 order, teamForUpdate, Side.SELL,
