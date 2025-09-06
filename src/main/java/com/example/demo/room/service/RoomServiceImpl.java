@@ -120,6 +120,7 @@ public class RoomServiceImpl implements RoomService {
                 .room(room)
                 .user(user)
                 .isLeader(false)
+                .isReady(false)
                 .build();
 
         teamMemberRepository.save(teamMember);
