@@ -1,5 +1,7 @@
 package com.example.demo.room.service;
 
+import com.example.demo.chat.entity.ChatRoom;
+import com.example.demo.chat.repository.ChatRoomRepository;
 import com.example.demo.global.util.InviteCodeGenerator;
 import com.example.demo.room.converter.RoomConverter;
 import com.example.demo.room.dto.req.RoomReq;
@@ -38,6 +40,7 @@ public class RoomServiceImpl implements RoomService {
     private final TeamService teamService;
     private final RoundRepository roundRepository;
     private final YearRepository yearRepository;
+    private final ChatRoomRepository chatRoomRepository;
 
     @Override
     public RoomRes.InviteCode createInviteCode() {
@@ -85,6 +88,11 @@ public class RoomServiceImpl implements RoomService {
                     .asset(room.getSeedMoney())
                     .build();
             teamRepository.save(team);
+
+            ChatRoom chatRoom = ChatRoom.builder()
+                    .team(team)
+                    .build();
+            chatRoomRepository.save(chatRoom);
         }
 
         return new RoomRes.CreateRoom(room.getId(), room.getMaxMember(), room.getPwd(), room.getInviteCode(),
@@ -439,4 +447,6 @@ public class RoomServiceImpl implements RoomService {
         teamService.sendTeamUpdate(roomId, teamId);
         return "팀에서 나갔습니다.";
     }
+
+
 }
