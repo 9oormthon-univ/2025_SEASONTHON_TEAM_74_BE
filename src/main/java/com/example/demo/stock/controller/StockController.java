@@ -54,4 +54,13 @@ public class StockController {
         Long userId = jwtTokenProvider.getUserIdFromToken();
         return ApiResponse.onSuccess(stockService.endRound(userId, roomId, roundId));
     }
+
+    @PatchMapping("{roomId}/end")
+    public ApiResponse<String> endGame(
+            @PathVariable Long roomId
+    ){
+        Long userId = jwtTokenProvider.getUserIdFromToken();
+        stockService.endGame(userId, roomId);
+        return ApiResponse.onSuccess("게임이 종료되었습니다.");
+    }
 }
