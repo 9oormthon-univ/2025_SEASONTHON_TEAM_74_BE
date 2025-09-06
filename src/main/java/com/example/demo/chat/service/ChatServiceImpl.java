@@ -39,8 +39,9 @@ public class ChatServiceImpl implements ChatService {
         ChatRoom chatRoom = chatRoomRepository.findById(chatRoomId)
                 .orElseThrow(() -> new IllegalArgumentException("ChatRoom not found with id: " + chatRoomId));
 
-        TeamMember teamMember = teamMemberRepository.findByUserIdAndTeamId(userId, chatRoom.getTeam().getId())
-                .orElseThrow(() -> new IllegalArgumentException("User is not a member of the team for this chat room"));
+        //이후에 활성화 시켜야함!!
+//      TeamMember teamMember = teamMemberRepository.findByUserIdAndTeamId(userId, chatRoom.getTeam().getId())
+//                .orElseThrow(() -> new IllegalArgumentException("User is not a member of the team for this chat room"));
 
         Message message = messageRepository.save(Message.builder()
                 .content(chatMessageDto.getMessage())
