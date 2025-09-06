@@ -30,7 +30,7 @@ public class TeamMember {
     private Team team;
 
     @Column(name = "is_leader", nullable = false)
-    private Boolean isLeader;
+    private Boolean isLeader = false;
 
     @Column(name = "is_ready", nullable = false)
     private Boolean isReady = false;
