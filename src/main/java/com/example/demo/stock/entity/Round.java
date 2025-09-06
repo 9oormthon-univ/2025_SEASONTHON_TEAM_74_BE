@@ -26,14 +26,14 @@ public class Round {
     private Integer roundNumber;
 
     @ManyToOne
-    @JoinColumn(name = "year_id", nullable = false)
+    @JoinColumn(name = "years_id", nullable = false)
     private Year year;
 
     @OneToMany(mappedBy = "round", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<TeamHistory> teamRounds;
 
     @OneToMany(mappedBy = "round", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Orders> stockTransactions;
+    private List<Order> orderList;
 
     @ManyToOne
     @JoinColumn(name = "room_id", nullable = false)
