@@ -19,13 +19,12 @@ public class StockController {
     private final StockService stockService;
     private final JwtTokenProvider jwtTokenProvider;
 
-    @GetMapping("/{roomId}/rounds/{roundId}/data")
+    @GetMapping("/{roomId}/data")
     public ApiResponse<StockRoundDataResponse> retrieveStockRoundData(
-            @PathVariable Long roomId,
-            @PathVariable Long roundId
+            @PathVariable Long roomId
     ) {
         Long userId = jwtTokenProvider.getUserIdFromToken();
-        return ApiResponse.onSuccess(stockService.retrieveRoundDate(userId, roomId, roundId));
+        return ApiResponse.onSuccess(stockService.retrieveRoundDate(userId, roomId));
     }
 
     @PostMapping("/{roomId}/orders/buy")
@@ -46,13 +45,12 @@ public class StockController {
         return ApiResponse.onSuccess(stockService.sellStock(userId, roomId, request));
     }
 
-    @PatchMapping("/{roomId}/rounds/{roundId}")
+    @PatchMapping("/{roomId}/lock")
     public ApiResponse<RoundResultResponse> endRound(
-            @PathVariable Long roomId,
-            @PathVariable Long roundId
+            @PathVariable Long roomId
     ) {
         Long userId = jwtTokenProvider.getUserIdFromToken();
-        return ApiResponse.onSuccess(stockService.endRound(userId, roomId, roundId));
+        return ApiResponse.onSuccess(stockService.endRound(userId, roomId));
     }
 
     @PatchMapping("{roomId}/end")

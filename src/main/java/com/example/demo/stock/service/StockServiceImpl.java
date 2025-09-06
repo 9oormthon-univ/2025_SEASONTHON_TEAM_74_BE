@@ -46,7 +46,7 @@ public class StockServiceImpl implements StockService {
 
     @Override
     @Transactional(readOnly = true)
-    public StockRoundDataResponse retrieveRoundDate(Long userId, Long roomId, Long roundId) {
+    public StockRoundDataResponse retrieveRoundDate(Long userId, Long roomId) {
         Round currentRound = getCurrentRoundByRoomId(roomId);
         Team userTeam = getUserTeam(userId, roomId);
         Year year = currentRound.getYear();
@@ -122,19 +122,16 @@ public class StockServiceImpl implements StockService {
     }
 
     @Override
-    public RoundResultResponse endRound(Long userId, Long roomId, Long roundId) {
+    public RoundResultResponse endRound(Long userId, Long roomId) {
         Round currentRound = getCurrentRoundByRoomId(roomId);
-        
-        List<Order> allRoundOrders = ordersRepository.findByRoundId(roundId);
-        log.info("라운드 {} 주문이 잠겼습니다. 총 주문 수: {}", roundId, allRoundOrders.size());
-        
+
+        // Lock: 현재 라운드, 팀, 주식 보유 현황 등 잠금 조회
         List<Team> teams = teamRepository.findAllByRoomId(roomId);
         
         // 각 팀별 투자 정보 계산
         List<RoundResultResponse.TeamInvestmentDto> teamInvestments = teams.stream()
                 .map(team -> calculateTeamInvestmentInfo(team, currentRound.getYear().getYearId()))
                 .toList();
-        
         return RoundResultResponse.builder()
                 .roundNumber(currentRound.getRoundNumber())
                 .year(currentRound.getYear().getYearId())

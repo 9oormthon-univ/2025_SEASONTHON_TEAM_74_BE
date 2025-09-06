@@ -8,13 +8,13 @@ import com.example.demo.stock.dto.res.StockRoundDataResponse;
 
 public interface StockService {
 
-    StockRoundDataResponse retrieveRoundDate(Long userId, Long roomId, Long roundId);
+    StockRoundDataResponse retrieveRoundDate(Long userId, Long roomId);
 
     OrderResponse buyStock(Long userId, Long roomId, OrderBuyRequest request);
 
     OrderResponse sellStock(Long userId, Long roomId, OrderSellRequest request);
 
-    RoundResultResponse endRound(Long userId, Long roomId, Long roundId);
+    RoundResultResponse endRound(Long userId, Long roomId);
 
     void endGame(Long userId, Long roomId);
 }

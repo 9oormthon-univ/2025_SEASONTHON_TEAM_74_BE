@@ -8,10 +8,7 @@ import org.springframework.data.repository.query.Param;
 import java.util.Optional;
 
 public interface RoundRepository extends JpaRepository<Round, Long> {
-    
-    @Query("SELECT r FROM Round r WHERE r.room.id = :roomId AND r.id = :roundId")
-    Optional<Round> findByRoomIdAndRoundId(@Param("roomId") Long roomId, @Param("roundId") Long roundId);
-    
+
     @Query("SELECT r FROM Round r WHERE r.room.id = :roomId AND r.isActive = true")
     Optional<Round> findCurrentRoundByRoomId(@Param("roomId") Long roomId);
 }

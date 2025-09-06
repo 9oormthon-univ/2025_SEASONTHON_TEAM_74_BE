@@ -10,12 +10,9 @@ import java.util.Optional;
 
 public interface YearInstrumentRepository extends JpaRepository<YearInstrument, Long> {
     
-    @Query("SELECT yi FROM YearInstrument yi WHERE yi.year.id = :yearId")
-    List<YearInstrument> findByYearId(@Param("yearId") Long yearId);
-    
-    @Query("SELECT yi FROM YearInstrument yi WHERE yi.year.id = :yearId AND yi.instrument.id = :instrumentId")
+    @Query("SELECT yi FROM YearInstrument yi WHERE yi.year.yearId = :yearId AND yi.instrument.id = :instrumentId")
     Optional<YearInstrument> findByYearIdAndInstrumentId(@Param("yearId") Long yearId, @Param("instrumentId") Long instrumentId);
     
-    @Query("SELECT DISTINCT yi FROM YearInstrument yi JOIN FETCH yi.instrument WHERE yi.year.id = :yearId")
+    @Query("SELECT DISTINCT yi FROM YearInstrument yi JOIN FETCH yi.instrument WHERE yi.year.yearId = :yearId")
     List<YearInstrument> findAllWithInstrumentByYearId(@Param("yearId") Long yearId);
 }
