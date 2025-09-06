@@ -5,6 +5,7 @@ import com.example.demo.common.security.JwtTokenProvider;
 import com.example.demo.stock.dto.req.OrderBuyRequest;
 import com.example.demo.stock.dto.req.OrderSellRequest;
 import com.example.demo.stock.dto.res.OrderResponse;
+import com.example.demo.stock.dto.res.RoundResultResponse;
 import com.example.demo.stock.dto.res.StockRoundDataResponse;
 import com.example.demo.stock.service.StockService;
 import lombok.RequiredArgsConstructor;
@@ -43,5 +44,14 @@ public class StockController {
     ) {
         Long userId = jwtTokenProvider.getUserIdFromToken();
         return ApiResponse.onSuccess(stockService.sellStock(userId, roomId, request));
+    }
+
+    @PatchMapping("/{roomId}/rounds/{roundId}")
+    public ApiResponse<RoundResultResponse> endRound(
+            @PathVariable Long roomId,
+            @PathVariable Long roundId
+    ) {
+        Long userId = jwtTokenProvider.getUserIdFromToken();
+        return ApiResponse.onSuccess(stockService.endRound(userId, roomId, roundId));
     }
 }
