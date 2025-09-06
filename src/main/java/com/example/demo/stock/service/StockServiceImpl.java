@@ -125,6 +125,7 @@ public class StockServiceImpl implements StockService {
 
     @Override
     public RoundResultResponse endRound(Long userId, Long roomId) {
+        Team userTeam = getUserTeam(userId, roomId);
         Round currentRound = getCurrentRoundByRoomId(roomId);
 
         // Lock: 현재 라운드, 팀, 주식 보유 현황 등 잠금 조회
@@ -139,6 +140,7 @@ public class StockServiceImpl implements StockService {
         // TODO: 마지막 라운드가 아니라면 다음 라운드로 넘어가는 로직 추가 (현재 라운드 상태 변경 및 다음 라운드 생성)
 
         return RoundResultResponse.builder()
+                .teamId(userTeam.getId())
                 .roundNumber(currentRound.getRoundNumber())
                 .year(currentRound.getYear().getYearId())
                 .teamInvestments(teamInvestments)

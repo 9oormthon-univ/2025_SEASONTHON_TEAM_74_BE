@@ -6,6 +6,7 @@ import java.util.List;
 
 @Builder
 public record RoundResultResponse(
+        Long teamId,
         Integer roundNumber,
         long year,
         List<TeamInvestmentDto> teamInvestments
