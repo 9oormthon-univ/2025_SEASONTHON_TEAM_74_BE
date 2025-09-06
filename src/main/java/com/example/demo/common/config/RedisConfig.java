@@ -26,8 +26,8 @@ public class RedisConfig {
     @Value("${spring.data.redis.port}")
     private int port;
 
-    @Value("${spring.data.redis.password}")
-    private String password;
+//    @Value("${spring.data.redis.password}")
+//    private String password;
 
     /**
      * JWT 전용 RedisTemplate 설정
@@ -37,7 +37,6 @@ public class RedisConfig {
     @Primary // 기본 ConnectionFactory로 지정
     public RedisConnectionFactory jwtRedisConnectionFactory() {
         RedisStandaloneConfiguration config = new RedisStandaloneConfiguration(host, port);
-        config.setPassword(password);
         config.setDatabase(0);
         // config.setPassword(password);
         return new LettuceConnectionFactory(config);
@@ -49,7 +48,6 @@ public class RedisConfig {
     @Bean(name = "chatRedisConnectionFactory")
     public RedisConnectionFactory chatRedisConnectionFactory() {
         RedisStandaloneConfiguration config = new RedisStandaloneConfiguration(host, port);
-        config.setPassword(password);
         // Pub/Sub은 특정 데이터베이스에 종속되지 않으므로 DB 인덱스 설정이 필요 없습니다.
         // config.setPassword(password);
         return new LettuceConnectionFactory(config);
