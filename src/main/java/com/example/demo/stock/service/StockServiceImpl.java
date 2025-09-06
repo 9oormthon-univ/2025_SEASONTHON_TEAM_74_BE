@@ -74,7 +74,7 @@ public class StockServiceImpl implements StockService {
         Team userTeam = getUserTeam(userId, roomId);
         YearInstrument yearInstrument = getYearInstrument(currentRound.getYear().getYearId(), request.instrumentId());
         
-        int serverPrice = yearInstrument.getPrice();
+        Long serverPrice = yearInstrument.getYearOpenPrice();
         int requestQty = request.qty();
         
         validateBuyRequest(requestQty, userTeam, serverPrice);
@@ -103,7 +103,7 @@ public class StockServiceImpl implements StockService {
 
         StockHeld heldStock = getHeldStock(userTeam, yearInstrument);
         
-        int serverPrice = yearInstrument.getPrice();
+        Long serverPrice = yearInstrument.getYearOpenPrice();
         int requestQty = request.qty();
         
         validateSellRequest(requestQty, heldStock);
@@ -133,6 +133,10 @@ public class StockServiceImpl implements StockService {
         List<RoundResultResponse.TeamInvestmentDto> teamInvestments = teams.stream()
                 .map(team -> calculateTeamInvestmentInfo(team, currentRound.getYear().getYearId()))
                 .toList();
+
+        // TODO: 라운드 종료 시 보여줄 정보 저장 후 스냅샷 테이블 저장
+        // TODO: 마지막 라운드가 아니라면 다음 라운드로 넘어가는 로직 추가 (현재 라운드 상태 변경 및 다음 라운드 생성)
+
         return RoundResultResponse.builder()
                 .roundNumber(currentRound.getRoundNumber())
                 .year(currentRound.getYear().getYearId())
@@ -170,12 +174,12 @@ public class StockServiceImpl implements StockService {
                 .orElseThrow(() -> new RuntimeException("보유하지 않은 주식입니다."));
     }
 
-    private void validateBuyRequest(int requestQty, Team team, int price) {
+    private void validateBuyRequest(int requestQty, Team team, Long price) {
         if (requestQty <= 0) {
             throw new RuntimeException("수량은 1 이상이어야 합니다.");
         }
         
-        int totalCost = price * requestQty;
+        Long totalCost = price * requestQty;
         if (team.getAsset() < totalCost) {
             throw new RuntimeException("자산이 부족합니다.");
         }
@@ -200,7 +204,7 @@ public class StockServiceImpl implements StockService {
         }
     }
 
-    private Order createAndSaveOrder(Round round, Team team, int price, int requestQty, Side side) {
+    private Order createAndSaveOrder(Round round, Team team, Long price, int requestQty, Side side) {
         Order order = Order.builder()
                 .round(round)
                 .team(team)
@@ -264,7 +268,7 @@ public class StockServiceImpl implements StockService {
                 .map(yi -> StockRoundDataResponse.StockInfoDto.builder()
                         .instrumentId(yi.getInstrument().getId())
                         .uiLabel(yi.getInstrument().getUiLabel())
-                        .price(yi.getPrice())
+                        .price(yi.getYearOpenPrice())
                         .build())
                 .toList();
     }
@@ -272,8 +276,8 @@ public class StockServiceImpl implements StockService {
     private StockRoundDataResponse.TeamAssetDto buildTeamAssetInfo(Team team) {
         List<StockHeld> heldStocks = stockHeldRepository.findByTeamId(team.getId());
 
-        int totalStockValue = heldStocks.stream()
-                .mapToInt(sh -> sh.getQty() * sh.getYearInstrument().getPrice())
+        Long totalStockValue = heldStocks.stream()
+                .mapToLong(sh -> sh.getQty() * sh.getYearInstrument().getYearOpenPrice())
                 .sum();
 
         List<StockRoundDataResponse.HeldStockDto> heldStockDtos = heldStocks.stream()
@@ -282,13 +286,13 @@ public class StockServiceImpl implements StockService {
                         .affiliate(sh.getYearInstrument().getInstrument().getAffiliate())
                         .uiLabel(sh.getYearInstrument().getInstrument().getUiLabel())
                         .qty(sh.getQty())
-                        .currentPrice(sh.getYearInstrument().getPrice())
-                        .totalValue(sh.getQty() * sh.getYearInstrument().getPrice())
+                        .currentPrice(sh.getYearInstrument().getYearOpenPrice())
+                        .totalValue(sh.getQty() * sh.getYearInstrument().getYearOpenPrice())
                         .build())
                 .toList();
 
-        int currentMoney = team.getAsset();
-        int totalAsset = currentMoney + totalStockValue;
+        Long currentMoney = team.getAsset();
+        Long totalAsset = currentMoney + totalStockValue;
 
         return StockRoundDataResponse.TeamAssetDto.builder()
                 .currentMoney(currentMoney)
@@ -297,27 +301,27 @@ public class StockServiceImpl implements StockService {
                 .build();
     }
 
-    private void debitTeamAsset(Team team, int amount) {
+    private void debitTeamAsset(Team team, Long amount) {
         if (team.getAsset() < amount) {
             throw new RuntimeException("자산이 부족합니다.");
         }
         team.setAsset(team.getAsset() - amount);
     }
 
-    private void creditTeamAsset(Team team, int amount) {
+    private void creditTeamAsset(Team team, Long amount) {
         team.setAsset(team.getAsset() + amount);
     }
 
     private RoundResultResponse.TeamInvestmentDto calculateTeamInvestmentInfo(Team team, Long yearId) {
         List<StockHeld> heldStocks = stockHeldRepository.findByTeamId(team.getId());
         
-        int totalInvestmentAmount = heldStocks.stream()
-                .mapToInt(sh -> sh.getQty() * sh.getYearInstrument().getPrice())
+        Long totalInvestmentAmount = heldStocks.stream()
+                .mapToLong(sh -> sh.getQty() * sh.getYearInstrument().getYearOpenPrice())
                 .sum();
         
         String maxInvestmentStock = heldStocks.stream()
                 .filter(sh -> sh.getQty() > 0) // 보유량이 있는 것만
-                .max(Comparator.comparingInt(sh -> sh.getQty() * sh.getYearInstrument().getPrice()))
+                .max(Comparator.comparingLong(sh -> sh.getQty() * sh.getYearInstrument().getYearOpenPrice()))
                 .map(sh -> sh.getYearInstrument().getInstrument().getUiLabel())
                 .orElse("없음");
         

@@ -20,14 +20,14 @@ public record StockRoundDataResponse(
     public record StockInfoDto(
             Long instrumentId,
             String uiLabel,
-            Integer price
+            long price
     ) {
     }
     
     @Builder
     public record TeamAssetDto(
-            Integer currentMoney,
-            Integer totalAsset,
+            long currentMoney,
+            long totalAsset,
             List<HeldStockDto> heldStocks
     ) {
     }
@@ -38,8 +38,8 @@ public record StockRoundDataResponse(
             String affiliate,
             String uiLabel,
             Integer qty,
-            Integer currentPrice,
-            Integer totalValue
+            long currentPrice,
+            long totalValue
     ) {
     }
 }

@@ -13,7 +13,7 @@ public class RoomRes {
     public record CreateRoom(
             Long roomId, Integer maxMember, String pwd, String inviteCode,
             Integer maxTeam, Integer maxRound, RoomStatus roomStatus, Mode mode,
-            String yearSet, Integer seedMoney, String nickName) {}
+            String yearSet, Long seedMoney, String nickName) {}
 
     public record JoinRoom(Long roomId, String nickName, List<TeamRes.TeamDetail> teamDetail) {}
 

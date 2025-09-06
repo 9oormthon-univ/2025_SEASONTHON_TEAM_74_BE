@@ -21,8 +21,8 @@ public record StockUpdateMessage(
 
     @Builder
     public record TeamAssetUpdate(
-            Integer currentMoney,
-            Integer totalAsset,
+            long currentMoney,
+            long totalAsset,
             List<HeldStockUpdate> heldStocks
     ) {
     }
@@ -33,8 +33,8 @@ public record StockUpdateMessage(
             String affiliate,
             String uiLabel,
             Integer qty,
-            Integer currentPrice,
-            Integer totalValue
+            long currentPrice,
+            long totalValue
     ) {
     }
 
@@ -44,7 +44,7 @@ public record StockUpdateMessage(
             Side side,
             Long instrumentId,
             String instrumentName,
-            Integer price,
+            long price,
             Integer qty,
             Long timestamp
     ) {

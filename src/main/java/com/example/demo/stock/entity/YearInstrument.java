@@ -6,6 +6,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 @Entity
@@ -21,8 +22,14 @@ public class YearInstrument {
     @Column(name = "year_instrument_id")
     private Long id;
 
-    @Column
-    private Integer price;
+    @Column(name = "year_open_price", nullable = false)
+    private Long yearOpenPrice;
+
+    @Column(name= "year_close_price", nullable = false)
+    private Long yearClosePrice;
+
+    @Column(name = "annual_return_pct", precision = 6, scale = 2, nullable = false)
+    private BigDecimal annualReturnPct;
 
     @ManyToOne
     @JoinColumn(name = "year_id", nullable = false)

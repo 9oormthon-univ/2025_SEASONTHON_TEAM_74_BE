@@ -31,7 +31,7 @@ public class Room extends BaseEntity {
     private String pwd;
 
     @Column(name = "seed_money")
-    private Integer seedMoney;
+    private Long seedMoney;
 
     @Column(name = "year_set")
     private String yearSet;

@@ -75,8 +75,8 @@ public class StockWebSocketService {
     private StockUpdateMessage.TeamAssetUpdate buildTeamAssetUpdate(Team team) {
         List<StockHeld> heldStocks = stockHeldRepository.findByTeamId(team.getId());
 
-        int totalStockValue = heldStocks.stream()
-                .mapToInt(sh -> sh.getQty() * sh.getYearInstrument().getPrice())
+        long totalStockValue = heldStocks.stream()
+                .mapToLong(sh -> sh.getQty() * sh.getYearInstrument().getYearOpenPrice())
                 .sum();
 
         List<StockUpdateMessage.HeldStockUpdate> heldStockUpdates = heldStocks.stream()
@@ -85,13 +85,13 @@ public class StockWebSocketService {
                         .affiliate(sh.getYearInstrument().getInstrument().getAffiliate())
                         .uiLabel(sh.getYearInstrument().getInstrument().getUiLabel())
                         .qty(sh.getQty())
-                        .currentPrice(sh.getYearInstrument().getPrice())
-                        .totalValue(sh.getQty() * sh.getYearInstrument().getPrice())
+                        .currentPrice(sh.getYearInstrument().getYearOpenPrice())
+                        .totalValue(sh.getQty() * sh.getYearInstrument().getYearOpenPrice())
                         .build())
                 .toList();
 
-        int currentMoney = team.getAsset();
-        int totalAsset = currentMoney + totalStockValue;
+        long currentMoney = team.getAsset();
+        long totalAsset = currentMoney + totalStockValue;
 
         return StockUpdateMessage.TeamAssetUpdate.builder()
                 .currentMoney(currentMoney)
