@@ -23,6 +23,7 @@ services:
       AWS_DB_URL: ${RDS_DB_URL}
       AWS_DB_USERNAME: ${RDS_DB_USERNAME}
       AWS_DB_PASSWORD: ${RDS_DB_PASSWORD}
+      DDL_AUTO: ${DDL_AUTO}
       AWS_REDIS_URL: redis
       JWT_SECRET_KEY: ${JWT_SECRET_KEY}
       KAKAO_ID: ${KAKAO_ID}
