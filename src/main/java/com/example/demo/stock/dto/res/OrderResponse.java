@@ -1,7 +1,7 @@
 package com.example.demo.stock.dto.res;
 
 import com.example.demo.room.entity.Team;
-import com.example.demo.stock.entity.Orders;
+import com.example.demo.stock.entity.Order;
 import com.example.demo.stock.entity.enums.Side;
 import lombok.Builder;
 
@@ -14,7 +14,7 @@ public record OrderResponse(
         Integer qty,
         Long instrumentId
 ) {
-    public static OrderResponse of(Orders order, Team team, Side side, int price, int qty, Long instrumentId) {
+    public static OrderResponse of(Order order, Team team, Side side, int price, int qty, Long instrumentId) {
         return OrderResponse.builder()
                 .orderId(order.getId())
                 .teamId(team.getId())

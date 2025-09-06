@@ -42,12 +42,12 @@ public class StockServiceImpl implements StockService {
         Team userTeam = getUserTeam(userId, roomId);
         Year year = round.getYear();
 
-        List<StockRoundDataResponse.StockInfoDto> stocks = buildStockInfoList(year.getId());
+        List<StockRoundDataResponse.StockInfoDto> stocks = buildStockInfoList(year.getYearId());
         StockRoundDataResponse.TeamAssetDto teamAsset = buildTeamAssetInfo(userTeam);
 
         return StockRoundDataResponse.builder()
                 .roundNumber(round.getRoundNumber())
-                .year(year.getYear())
+                .year(year.getYearId())
                 .hint1(year.getHint1())
                 .hint2(year.getHint2())
                 .hint3(year.getHint3())
@@ -61,7 +61,7 @@ public class StockServiceImpl implements StockService {
         // 1. 기본 데이터 조회
         Round currentRound = getCurrentRoundByRoomId(roomId);
         Team userTeam = getUserTeam(userId, roomId);
-        YearInstrument yearInstrument = getYearInstrument(currentRound.getYear().getId(), request.instrumentId());
+        YearInstrument yearInstrument = getYearInstrument(currentRound.getYear().getYearId(), request.instrumentId());
         
         // 2. 동시성 보호를 위한 락 조회
         Team teamForUpdate = getTeamForUpdate(userTeam.getId());
@@ -73,7 +73,7 @@ public class StockServiceImpl implements StockService {
         validateBuyRequest(requestQty, teamForUpdate, serverPrice);
         
         // 4. 주문 처리
-        Orders order = createAndSaveBuyOrder(currentRound, teamForUpdate, serverPrice, requestQty);
+        Order order = createAndSaveBuyOrder(currentRound, teamForUpdate, serverPrice, requestQty);
         
         // 5. 자산 및 포지션 업데이트
         debitTeamAsset(teamForUpdate, serverPrice * requestQty);
@@ -92,7 +92,7 @@ public class StockServiceImpl implements StockService {
         // 1. 기본 데이터 조회
         Round currentRound = getCurrentRoundByRoomId(roomId);
         Team userTeam = getUserTeam(userId, roomId);
-        YearInstrument yearInstrument = getYearInstrument(currentRound.getYear().getId(), request.instrumentId());
+        YearInstrument yearInstrument = getYearInstrument(currentRound.getYear().getYearId(), request.instrumentId());
         
         // 2. 동시성 보호를 위한 락 조회
         Team teamForUpdate = getTeamForUpdate(userTeam.getId());
@@ -105,7 +105,7 @@ public class StockServiceImpl implements StockService {
         validateSellRequest(requestQty, heldStock);
         
         // 4. 주문 처리
-        Orders order = createAndSaveSellOrder(currentRound, teamForUpdate, serverPrice, requestQty);
+        Order order = createAndSaveSellOrder(currentRound, teamForUpdate, serverPrice, requestQty);
         
         // 5. 자산 및 포지션 업데이트
         creditTeamAsset(teamForUpdate, serverPrice * requestQty);
@@ -123,7 +123,7 @@ public class StockServiceImpl implements StockService {
         Round round = getRoundByRoomAndRoundId(roomId, roundId);
         
         // 1. 해당 라운드의 모든 주문 잠금 (로그만 출력)
-        List<Orders> allRoundOrders = ordersRepository.findByRoundId(roundId);
+        List<Order> allRoundOrders = ordersRepository.findByRoundId(roundId);
         log.info("라운드 {} 주문이 잠겼습니다. 총 주문 수: {}", roundId, allRoundOrders.size());
         
         // 2. 해당 방의 모든 팀 조회
@@ -131,12 +131,12 @@ public class StockServiceImpl implements StockService {
         
         // 3. 각 팀별 투자 정보 계산
         List<RoundResultResponse.TeamInvestmentDto> teamInvestments = teams.stream()
-                .map(team -> calculateTeamInvestmentInfo(team, round.getYear().getId()))
+                .map(team -> calculateTeamInvestmentInfo(team, round.getYear().getYearId()))
                 .toList();
         
         return RoundResultResponse.builder()
                 .roundNumber(round.getRoundNumber())
-                .year(round.getYear().getYear())
+                .year(round.getYear().getYearId())
                 .teamInvestments(teamInvestments)
                 .build();
     }
@@ -187,8 +187,8 @@ public class StockServiceImpl implements StockService {
         }
     }
 
-    private Orders createAndSaveBuyOrder(Round round, Team team, int serverPrice, int requestQty) {
-        Orders order = Orders.builder()
+    private Order createAndSaveBuyOrder(Round round, Team team, int serverPrice, int requestQty) {
+        Order order = Order.builder()
                 .round(round)
                 .team(team)
                 .side(Side.BUY)
@@ -198,7 +198,7 @@ public class StockServiceImpl implements StockService {
         return ordersRepository.save(order);
     }
 
-    private void updateStockPosition(Team team, YearInstrument yearInstrument, Orders order, int requestQty) {
+    private void updateStockPosition(Team team, YearInstrument yearInstrument, Order order, int requestQty) {
         StockHeld existingStock = stockHeldRepository.findByTeamIdAndYearInstrumentIdForUpdate(
                         team.getId(), yearInstrument.getId())
                 .orElse(null);
@@ -206,7 +206,7 @@ public class StockServiceImpl implements StockService {
         if (existingStock == null) {
             // 최초 생성
             StockHeld created = StockHeld.builder()
-                    .orders(order)
+                    .order(order)
                     .yearInstrument(yearInstrument)
                     .team(team)
                     .qty(requestQty)
@@ -218,7 +218,7 @@ public class StockServiceImpl implements StockService {
             
             StockHeld updated = StockHeld.builder()
                     .id(existingStock.getId())
-                    .orders(existingStock.getOrders()) // 기존 참조 유지
+                    .order(existingStock.getOrder()) // 기존 참조 유지
                     .yearInstrument(yearInstrument)
                     .team(team)
                     .qty(newQty)
@@ -279,8 +279,8 @@ public class StockServiceImpl implements StockService {
         }
     }
 
-    private Orders createAndSaveSellOrder(Round round, Team team, int serverPrice, int requestQty) {
-        Orders order = Orders.builder()
+    private Order createAndSaveSellOrder(Round round, Team team, int serverPrice, int requestQty) {
+        Order order = Order.builder()
                 .round(round)
                 .team(team)
                 .side(Side.SELL)
@@ -300,7 +300,7 @@ public class StockServiceImpl implements StockService {
             // 수량 업데이트
             StockHeld updated = StockHeld.builder()
                     .id(heldStock.getId())
-                    .orders(heldStock.getOrders()) // 기존 참조 유지
+                    .order(heldStock.getOrder()) // 기존 참조 유지
                     .yearInstrument(heldStock.getYearInstrument())
                     .team(heldStock.getTeam())
                     .qty(newQty)

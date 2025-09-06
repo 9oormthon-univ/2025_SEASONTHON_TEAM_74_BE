@@ -12,11 +12,13 @@ import com.example.demo.room.entity.enums.RoomStatus;
 import com.example.demo.room.repository.RoomRepository;
 import com.example.demo.room.repository.TeamMemberRepository;
 import com.example.demo.room.repository.TeamRepository;
+import com.example.demo.stock.entity.Round;
+import com.example.demo.stock.repository.RoundRepository;
+import com.example.demo.stock.repository.YearRepository;
 import com.example.demo.user.entity.User;
 import com.example.demo.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.messaging.simp.SimpMessageSendingOperations;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -34,6 +36,8 @@ public class RoomServiceImpl implements RoomService {
     private final TeamMemberRepository teamMemberRepository;
     private final TeamRepository teamRepository;
     private final TeamService teamService;
+    private final RoundRepository roundRepository;
+    private final YearRepository yearRepository;
 
     @Override
     public RoomRes.InviteCode createInviteCode() {
@@ -55,10 +59,22 @@ public class RoomServiceImpl implements RoomService {
         userRepository.save(user);
 
         Room room = roomRepository.save(RoomConverter.toRoomEntity(request, user));
+
+        for(int i = 0 ; i < room.getMaxRound(); i++) {
+            roundRepository.save(Round.builder()
+                    .room(room)
+                    .roundNumber(i+1)
+                    .year(yearRepository.findAllByYearId(2000 + i).orElseThrow(() -> new RuntimeException("Year not found")))
+                    .build());
+        }
+
+
         teamMemberRepository.save(TeamMember.builder()
+                .user(user)
                 .room(room)
                 .user(user)
                 .isLeader(false)
+                .isReady(false)
                 .build());
 
         for (int i = 0; i < room.getMaxTeam(); i++) {

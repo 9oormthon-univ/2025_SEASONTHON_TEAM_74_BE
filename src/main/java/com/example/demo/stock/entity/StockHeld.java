@@ -21,8 +21,8 @@ public class StockHeld {
     private Long id;
 
     @ManyToOne
-    @JoinColumn(name = "orders_id", nullable = false)
-    private Orders orders;
+    @JoinColumn(name = "order_id", nullable = false)
+    private Order order;
 
     @ManyToOne
     @JoinColumn(name = "year_instrument_id", nullable = false)
