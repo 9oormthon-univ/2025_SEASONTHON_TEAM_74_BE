@@ -12,6 +12,6 @@ public interface RoundRepository extends JpaRepository<Round, Long> {
     @Query("SELECT r FROM Round r WHERE r.room.id = :roomId AND r.id = :roundId")
     Optional<Round> findByRoomIdAndRoundId(@Param("roomId") Long roomId, @Param("roundId") Long roundId);
     
-    @Query("SELECT r FROM Round r WHERE r.room.id = :roomId ORDER BY r.roundNumber DESC")
+    @Query("SELECT r FROM Round r WHERE r.room.id = :roomId ORDER BY r.roundNumber DESC LIMIT 1")
     Optional<Round> findCurrentRoundByRoomId(@Param("roomId") Long roomId);
 }

@@ -2,15 +2,12 @@ package com.example.demo.stock.controller;
 
 import com.example.demo.apiPayload.ApiResponse;
 import com.example.demo.common.security.JwtTokenProvider;
+import com.example.demo.stock.dto.req.OrderBuyRequest;
+import com.example.demo.stock.dto.res.OrderResponse;
 import com.example.demo.stock.dto.res.StockRoundDataResponse;
 import com.example.demo.stock.service.StockService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-
-import static com.example.demo.apiPayload.code.status.SuccessStatus.GET_ROUND_DATA;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/rooms")
@@ -27,5 +24,14 @@ public class StockController {
     ) {
         Long userId = jwtTokenProvider.getUserIdFromToken();
         return ApiResponse.onSuccess(stockService.retrieveRoundDate(userId, roomId, roundId));
+    }
+
+    @PostMapping("/{roomId}/orders/buy")
+    public ApiResponse<OrderResponse> buyStock(
+            @PathVariable Long roomId,
+            @RequestBody OrderBuyRequest request
+    ) {
+        Long userId = jwtTokenProvider.getUserIdFromToken();
+        return ApiResponse.onSuccess(stockService.buyStock(userId, roomId, request));
     }
 }

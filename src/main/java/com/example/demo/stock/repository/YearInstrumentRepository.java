@@ -15,4 +15,7 @@ public interface YearInstrumentRepository extends JpaRepository<YearInstrument, 
     
     @Query("SELECT yi FROM YearInstrument yi WHERE yi.year.id = :yearId AND yi.instrument.id = :instrumentId")
     Optional<YearInstrument> findByYearIdAndInstrumentId(@Param("yearId") Long yearId, @Param("instrumentId") Long instrumentId);
+    
+    @Query("SELECT DISTINCT yi FROM YearInstrument yi JOIN FETCH yi.instrument WHERE yi.year.id = :yearId")
+    List<YearInstrument> findAllWithInstrumentByYearId(@Param("yearId") Long yearId);
 }
