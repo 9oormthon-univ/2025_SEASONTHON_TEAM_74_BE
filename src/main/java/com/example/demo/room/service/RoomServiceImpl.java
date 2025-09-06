@@ -294,11 +294,13 @@ public class RoomServiceImpl implements RoomService {
                 throw new RuntimeException("이미 팀장입니다.");
             }
             teamMember.setIsLeader(true);
+            teamMember.setIsReady(false);
         }else{
             if (!teamMember.getIsLeader() && Objects.equals(teamMember.getTeam().getId(), team.getId())) {
                 throw new RuntimeException("이미 팀원입니다.");
             }
             teamMember.setIsLeader(false);
+            teamMember.setIsReady(false);
         }
         teamMember.setTeam(team);
         teamMemberRepository.save(teamMember);
