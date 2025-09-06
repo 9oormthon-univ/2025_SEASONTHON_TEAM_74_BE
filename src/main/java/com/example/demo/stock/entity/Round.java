@@ -39,4 +39,5 @@ public class Round {
     @JoinColumn(name = "room_id", nullable = false)
     private Room room;
 
+    private boolean isActive;
 }
