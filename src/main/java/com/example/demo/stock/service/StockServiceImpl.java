@@ -44,15 +44,15 @@ public class StockServiceImpl implements StockService {
     @Override
     @Transactional(readOnly = true)
     public StockRoundDataResponse retrieveRoundDate(Long userId, Long roomId, Long roundId) {
-        Round round = getRoundByRoomAndRoundId(roomId, roundId);
+        Round currentRound = getCurrentRoundByRoomId(roomId);
         Team userTeam = getUserTeam(userId, roomId);
-        Year year = round.getYear();
+        Year year = currentRound.getYear();
 
         List<StockRoundDataResponse.StockInfoDto> stocks = buildStockInfoList(year.getYearId());
         StockRoundDataResponse.TeamAssetDto teamAsset = buildTeamAssetInfo(userTeam);
 
         return StockRoundDataResponse.builder()
-                .roundNumber(round.getRoundNumber())
+                .roundNumber(currentRound.getRoundNumber())
                 .year(year.getYearId())
                 .hint1(year.getHint1())
                 .hint2(year.getHint2())
@@ -99,12 +99,11 @@ public class StockServiceImpl implements StockService {
     @Override
     public OrderResponse sellStock(Long userId, Long roomId, OrderSellRequest request) {
         validateManageStock(userId, roomId);
-        // 1. 기본 데이터 조회
+
         Round currentRound = getCurrentRoundByRoomId(roomId);
         Team userTeam = getUserTeam(userId, roomId);
         YearInstrument yearInstrument = getYearInstrument(currentRound.getYear().getYearId(), request.instrumentId());
         
-        // 2. 동시성 보호를 위한 락 조회
         Team teamForUpdate = getTeamForUpdate(userTeam.getId());
         StockHeld heldStock = getHeldStock(teamForUpdate, yearInstrument);
         
@@ -121,7 +120,6 @@ public class StockServiceImpl implements StockService {
         creditTeamAsset(teamForUpdate, serverPrice * requestQty);
         updateStockPositionForSell(heldStock, requestQty);
         
-        // 6. 실시간 업데이트 브로드캐스트
         stockWebSocketService.broadcastOrderExecution(order, teamForUpdate, roomId, yearInstrument);
 
         return OrderResponse.of(
@@ -133,23 +131,21 @@ public class StockServiceImpl implements StockService {
 
     @Override
     public RoundResultResponse endRound(Long userId, Long roomId, Long roundId) {
-        Round round = getRoundByRoomAndRoundId(roomId, roundId);
+        Round currentRound = getCurrentRoundByRoomId(roomId);
         
-        // 1. 해당 라운드의 모든 주문 잠금 (로그만 출력)
         List<Order> allRoundOrders = ordersRepository.findByRoundId(roundId);
         log.info("라운드 {} 주문이 잠겼습니다. 총 주문 수: {}", roundId, allRoundOrders.size());
         
-        // 2. 해당 방의 모든 팀 조회
         List<Team> teams = teamRepository.findAllByRoomId(roomId);
         
-        // 3. 각 팀별 투자 정보 계산
+        // 각 팀별 투자 정보 계산
         List<RoundResultResponse.TeamInvestmentDto> teamInvestments = teams.stream()
-                .map(team -> calculateTeamInvestmentInfo(team, round.getYear().getYearId()))
+                .map(team -> calculateTeamInvestmentInfo(team, currentRound.getYear().getYearId()))
                 .toList();
         
         return RoundResultResponse.builder()
-                .roundNumber(round.getRoundNumber())
-                .year(round.getYear().getYearId())
+                .roundNumber(currentRound.getRoundNumber())
+                .year(currentRound.getYear().getYearId())
                 .teamInvestments(teamInvestments)
                 .build();
     }
@@ -165,11 +161,6 @@ public class StockServiceImpl implements StockService {
     }
 
     // Entity 조회 메서드들
-
-    private Round getRoundByRoomAndRoundId(Long roomId, Long roundId) {
-        return roundRepository.findByRoomIdAndRoundId(roomId, roundId)
-                .orElseThrow(() -> new RuntimeException("라운드를 찾을 수 없습니다."));
-    }
 
     private Round getCurrentRoundByRoomId(Long roomId) {
         return roundRepository.findCurrentRoundByRoomId(roomId)
