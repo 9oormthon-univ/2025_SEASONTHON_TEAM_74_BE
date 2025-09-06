@@ -1,6 +1,6 @@
 package com.example.demo.room.entity;
 
-import com.example.demo.stock.entity.Orders;
+import com.example.demo.stock.entity.Order;
 import com.example.demo.stock.entity.StockHeld;
 import com.example.demo.stock.entity.TeamHistory;
 import jakarta.persistence.*;
@@ -43,7 +43,7 @@ public class Team {
     private List<TeamHistory> teamHistories;
 
     @OneToMany(mappedBy = "team", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Orders> orders;
+    private List<Order> orders;
 
     @OneToMany(mappedBy = "team", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<StockHeld> stockHeldList;

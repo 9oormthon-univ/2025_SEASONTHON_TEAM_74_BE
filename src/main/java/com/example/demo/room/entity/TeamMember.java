@@ -30,11 +30,9 @@ public class TeamMember {
     @JoinColumn(name = "team_id", nullable = true)
     private Team team;
 
-    @NotNull
     @Column(name = "is_leader", nullable = false)
     private Boolean isLeader;
 
-    @NotNull
     @Column(name = "is_ready", nullable = false)
     private Boolean isReady = false;
 

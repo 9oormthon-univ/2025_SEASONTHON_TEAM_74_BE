@@ -17,12 +17,8 @@ import java.util.List;
 public class Year {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "year_id")
-    private Long id;
-
-    @Column(name = "year", nullable = false)
-    private Integer year;
+    @Column(name = "year_id", nullable = false)
+    private Integer yearId;
 
     @Column(name = "hint1")
     private String hint1;
