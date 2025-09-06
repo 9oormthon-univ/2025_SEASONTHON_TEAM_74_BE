@@ -137,7 +137,8 @@ public class StockServiceImpl implements StockService {
                 .toList();
 
         // TODO: 라운드 종료 시 보여줄 정보 저장 후 스냅샷 테이블 저장
-        // TODO: 마지막 라운드가 아니라면 다음 라운드로 넘어가는 로직 추가 (현재 라운드 상태 변경 및 다음 라운드 생성)
+
+        updateRoomRoundActive(currentRound, roomId);
 
         return RoundResultResponse.builder()
                 .teamId(userTeam.getId())
@@ -149,11 +150,15 @@ public class StockServiceImpl implements StockService {
 
     @Override
     public void endGame(Long userId, Long roomId) {
-        Room room = roomRepository.findById(roomId)
-                .orElseThrow(() -> new RuntimeException("방을 찾을 수 없습니다."));
+        Room room = getRoomById(roomId);
 
         room.setStatus(RoomStatus.ENDED);
         roomRepository.save(room);
+    }
+
+    private Room getRoomById(Long roomId){
+        return roomRepository.findById(roomId)
+                .orElseThrow(() -> new RuntimeException("방을 찾을 수 없습니다."));
     }
 
     private Round getCurrentRoundByRoomId(Long roomId) {
@@ -263,6 +268,22 @@ public class StockServiceImpl implements StockService {
                     .qty(newQty)
                     .build();
             stockHeldRepository.save(updated);
+        }
+    }
+
+    private void updateRoomRoundActive(Round currentRound, Long roomId) {
+        Room room = getRoomById(roomId);
+
+        if (currentRound.getRoundNumber() == room.getMaxRound()){
+            return;
+        }
+
+        Round nextRound = roundRepository.findByRoomIdAndRoundNumber(roomId, currentRound.getRoundNumber() + 1)
+                .orElse(null);
+
+        if (nextRound != null) {
+            nextRound.activate();
+            currentRound.deactivate();
         }
     }
 

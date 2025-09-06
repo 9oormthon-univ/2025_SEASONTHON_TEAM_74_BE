@@ -40,4 +40,12 @@ public class Round {
     private Room room;
 
     private boolean isActive;
+
+    public void activate() {
+        isActive = true;
+    }
+
+    public void deactivate() {
+        isActive = false;
+    }
 }
