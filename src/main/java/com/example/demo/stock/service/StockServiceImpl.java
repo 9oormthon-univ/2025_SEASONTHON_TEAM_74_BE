@@ -55,6 +55,7 @@ public class StockServiceImpl implements StockService {
         StockRoundDataResponse.TeamAssetDto teamAsset = buildTeamAssetInfo(userTeam);
 
         return StockRoundDataResponse.builder()
+                .teamId(userTeam.getId())
                 .roundNumber(currentRound.getRoundNumber())
                 .year(year.getYearId())
                 .hint1(year.getHint1())

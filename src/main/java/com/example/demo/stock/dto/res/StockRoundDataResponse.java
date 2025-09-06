@@ -7,6 +7,7 @@ import java.util.List;
 @Builder
 public record StockRoundDataResponse(
         Integer roundNumber,
+        Long teamId,
         Long year,
         String hint1,
         String hint2,
