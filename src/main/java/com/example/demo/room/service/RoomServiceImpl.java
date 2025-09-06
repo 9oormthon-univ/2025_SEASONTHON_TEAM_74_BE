@@ -13,14 +13,12 @@ import com.example.demo.room.repository.RoomRepository;
 import com.example.demo.room.repository.TeamMemberRepository;
 import com.example.demo.room.repository.TeamRepository;
 import com.example.demo.stock.entity.Round;
-import com.example.demo.stock.entity.Year;
 import com.example.demo.stock.repository.RoundRepository;
 import com.example.demo.stock.repository.YearRepository;
 import com.example.demo.user.entity.User;
 import com.example.demo.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.messaging.simp.SimpMessageSendingOperations;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
