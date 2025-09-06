@@ -6,8 +6,9 @@ import java.util.List;
 
 @Builder
 public record RoundResultResponse(
+        Long teamId,
         Integer roundNumber,
-        Long year,
+        long year,
         List<TeamInvestmentDto> teamInvestments
 ) {
 
@@ -15,7 +16,7 @@ public record RoundResultResponse(
     public record TeamInvestmentDto(
             String teamName,
             String maxInvestmentStock,
-            Integer totalInvestmentAmount
+            long totalInvestmentAmount
     ) {
     }
 }

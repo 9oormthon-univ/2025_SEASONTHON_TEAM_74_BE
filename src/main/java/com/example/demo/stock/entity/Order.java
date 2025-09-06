@@ -37,7 +37,7 @@ public class Order extends BaseEntity {
     private Side side; // "BUY" or "SELL"
 
     @Column
-    private Integer price;
+    private Long price;
 
     @Column
     private Integer qty;

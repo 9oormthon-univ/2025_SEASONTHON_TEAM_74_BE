@@ -10,11 +10,11 @@ public record OrderResponse(
         Long orderId,
         Long teamId,
         String side,
-        Integer price,
+        long price,
         Integer qty,
         Long instrumentId
 ) {
-    public static OrderResponse of(Order order, Team team, Side side, int price, int qty, Long instrumentId) {
+    public static OrderResponse of(Order order, Team team, Side side, long price, int qty, Long instrumentId) {
         return OrderResponse.builder()
                 .orderId(order.getId())
                 .teamId(team.getId())

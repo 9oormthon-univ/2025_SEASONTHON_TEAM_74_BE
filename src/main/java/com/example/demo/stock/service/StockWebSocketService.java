@@ -21,14 +21,6 @@ public class StockWebSocketService {
     private final SimpMessagingTemplate messagingTemplate;
     private final StockHeldRepository stockHeldRepository;
 
-    /**
-     * 팀 자산 업데이트를 방의 모든 사용자에게 브로드캐스트
-     * 라운드 종료 후 이자 지급, 배당금 지급 등에 사용
-     *   teams.forEach(team -> {
-     *       team.setAsset(team.getAsset() + interest);
-     *       stockWebSocketService.broadcastTeamAssetUpdate(team, roomId);
-     *   });
-     */
     public void broadcastTeamAssetUpdate(Team team, Long roomId) {
         try {
             StockUpdateMessage.TeamAssetUpdate teamAssetUpdate = buildTeamAssetUpdate(team);
@@ -41,8 +33,7 @@ public class StockWebSocketService {
                     .teamAsset(teamAssetUpdate)
                     .build();
 
-            // 해당 방의 모든 사용자에게 브로드캐스트
-            messagingTemplate.convertAndSend("/topic/room/" + roomId + "/stock-updates", message);
+            messagingTemplate.convertAndSend("/topic/room/" + roomId + "/team/" + team.getId() + "/stock-updates", message);
             
             log.debug("팀 자산 업데이트 브로드캐스트 완료 - 방: {}, 팀: {}", roomId, team.getId());
         } catch (Exception e) {
@@ -50,9 +41,6 @@ public class StockWebSocketService {
         }
     }
 
-    /**
-     * 주문 체결을 방의 모든 사용자에게 브로드캐스트
-     */
     public void broadcastOrderExecution(Order order, Team team, Long roomId, YearInstrument yearInstrument) {
         try {
             StockUpdateMessage.OrderUpdate orderUpdate = StockUpdateMessage.OrderUpdate.builder()
@@ -76,8 +64,7 @@ public class StockWebSocketService {
                     .orderUpdate(orderUpdate)
                     .build();
 
-            // 해당 방의 모든 사용자에게 브로드캐스트
-            messagingTemplate.convertAndSend("/topic/room/" + roomId + "/stock-updates", message);
+            messagingTemplate.convertAndSend("/topic/room/" + roomId + "/team/" + team.getId() + "/stock-updates", message);
             
             log.debug("주문 체결 브로드캐스트 완료 - 방: {}, 팀: {}, 주문: {}", roomId, team.getId(), order.getId());
         } catch (Exception e) {
@@ -85,14 +72,11 @@ public class StockWebSocketService {
         }
     }
 
-    /**
-     * 팀 자산 정보를 구성
-     */
     private StockUpdateMessage.TeamAssetUpdate buildTeamAssetUpdate(Team team) {
         List<StockHeld> heldStocks = stockHeldRepository.findByTeamId(team.getId());
 
-        int totalStockValue = heldStocks.stream()
-                .mapToInt(sh -> sh.getQty() * sh.getYearInstrument().getPrice())
+        long totalStockValue = heldStocks.stream()
+                .mapToLong(sh -> sh.getQty() * sh.getYearInstrument().getYearOpenPrice())
                 .sum();
 
         List<StockUpdateMessage.HeldStockUpdate> heldStockUpdates = heldStocks.stream()
@@ -101,13 +85,13 @@ public class StockWebSocketService {
                         .affiliate(sh.getYearInstrument().getInstrument().getAffiliate())
                         .uiLabel(sh.getYearInstrument().getInstrument().getUiLabel())
                         .qty(sh.getQty())
-                        .currentPrice(sh.getYearInstrument().getPrice())
-                        .totalValue(sh.getQty() * sh.getYearInstrument().getPrice())
+                        .currentPrice(sh.getYearInstrument().getYearOpenPrice())
+                        .totalValue(sh.getQty() * sh.getYearInstrument().getYearOpenPrice())
                         .build())
                 .toList();
 
-        int currentMoney = team.getAsset();
-        int totalAsset = currentMoney + totalStockValue;
+        long currentMoney = team.getAsset();
+        long totalAsset = currentMoney + totalStockValue;
 
         return StockUpdateMessage.TeamAssetUpdate.builder()
                 .currentMoney(currentMoney)

@@ -36,7 +36,7 @@ public class RoomReq {
         @NotNull(message = "시드머니는 필수입니다.")
         @Min(value = 100000, message = "최소 시드머니는 100,000 이상이어야 합니다.")
         @Max(value = 1000000, message = "최대 시드머니는 1,000,000 이하여야 합니다.")
-        private Integer seedMoney;
+        private Long seedMoney;
     }
 
     @Getter

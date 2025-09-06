@@ -2,11 +2,13 @@ package com.example.demo.stock.dto.res;
 
 import lombok.Builder;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 @Builder
 public record StockRoundDataResponse(
         Integer roundNumber,
+        Long teamId,
         Long year,
         String hint1,
         String hint2,
@@ -19,14 +21,15 @@ public record StockRoundDataResponse(
     public record StockInfoDto(
             Long instrumentId,
             String uiLabel,
-            Integer price
+            long price,
+            BigDecimal annualReturnPct
     ) {
     }
     
     @Builder
     public record TeamAssetDto(
-            Integer currentMoney,
-            Integer totalAsset,
+            long currentMoney,
+            long totalAsset,
             List<HeldStockDto> heldStocks
     ) {
     }
@@ -37,8 +40,8 @@ public record StockRoundDataResponse(
             String affiliate,
             String uiLabel,
             Integer qty,
-            Integer currentPrice,
-            Integer totalValue
+            long currentPrice,
+            long totalValue
     ) {
     }
 }

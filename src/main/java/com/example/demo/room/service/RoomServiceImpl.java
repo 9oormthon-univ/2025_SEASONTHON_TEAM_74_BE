@@ -71,9 +71,7 @@ public class RoomServiceImpl implements RoomService {
                     .build());
         }
 
-
         teamMemberRepository.save(TeamMember.builder()
-                .user(user)
                 .room(room)
                 .user(user)
                 .isLeader(false)
@@ -83,7 +81,7 @@ public class RoomServiceImpl implements RoomService {
         for (int i = 0; i < room.getMaxTeam(); i++) {
             Team team = Team.builder()
                     .room(room)
-                    .teamName("팀명 " + (i + 1))
+                    .teamName((i + 1) + "팀")
                     .isReady(false)
                     .asset(room.getSeedMoney())
                     .build();
