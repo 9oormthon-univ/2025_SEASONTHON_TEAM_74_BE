@@ -1,5 +1,6 @@
 package com.example.demo.room.service;
 
+import com.example.demo.chat.dto.ChatRes;
 import com.example.demo.room.dto.res.RoomRes;
 import com.example.demo.room.dto.res.TeamRes;
 import com.example.demo.room.entity.Team;
@@ -102,6 +103,11 @@ public class TeamService {
         log.info("{} {} 팀 조회:", roomId, teamId);
     }
 
-
+//    public void sendMessageToTeam(Long chatRoomId, ChatRes.ChatMessageDtoRes message) {
+//        String destination = "/topic/chat/" + chatRoomId; // roomId를 사용하여 토픽 경로를 동적으로 생성
+//
+//        messagingTemplate.convertAndSend(destination, message);
+//        log.info("{} {} 팀 메시지 전송: {}", destination, chatRoomId, message);
+//    }
 
 }

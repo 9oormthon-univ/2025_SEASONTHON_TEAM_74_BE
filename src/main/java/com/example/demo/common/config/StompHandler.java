@@ -1,9 +1,10 @@
 //package com.example.demo.common.config;
 //
-//import com.example.chatserver.chat.service.ChatService;
+//import com.example.demo.chat.service.ChatService;
 //import io.jsonwebtoken.Claims;
 //import io.jsonwebtoken.Jwts;
 //import org.springframework.beans.factory.annotation.Value;
+//import org.springframework.context.annotation.Lazy;
 //import org.springframework.messaging.Message;
 //import org.springframework.messaging.MessageChannel;
 //import org.springframework.messaging.simp.stomp.StompCommand;
@@ -19,7 +20,7 @@
 //    private String secretKey;
 //    private final ChatService chatService;
 //
-//    public StompHandler(ChatService chatService) {
+//    public StompHandler(@Lazy ChatService chatService) {
 //        this.chatService = chatService;
 //    }
 //
@@ -48,11 +49,6 @@
 //                    .build()
 //                    .parseClaimsJws(token)
 //                    .getBody();
-//            String email = claims.getSubject();
-//            String roomId = accessor.getDestination().split("/")[2];
-//            if(!chatService.isRoomPaticipant(email, Long.parseLong(roomId))){
-//                throw new AuthenticationServiceException("해당 room에 권한이 없습니다.");
-//            }
 //        }
 //
 //        return message;
