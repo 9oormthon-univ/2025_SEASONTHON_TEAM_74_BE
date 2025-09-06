@@ -6,6 +6,7 @@ import com.example.demo.room.repository.TeamRepository;
 import com.example.demo.stock.dto.req.OrderBuyRequest;
 import com.example.demo.stock.dto.req.OrderSellRequest;
 import com.example.demo.stock.dto.res.OrderResponse;
+import com.example.demo.stock.dto.res.RoundResultResponse;
 import com.example.demo.stock.dto.res.StockRoundDataResponse;
 import com.example.demo.stock.entity.*;
 import com.example.demo.stock.entity.enums.Side;
@@ -18,6 +19,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Comparator;
 import java.util.List;
 
 @Service
@@ -114,6 +116,29 @@ public class StockServiceImpl implements StockService {
                 serverPrice, requestQty,
                 request.instrumentId()
         );
+    }
+
+    @Override
+    public RoundResultResponse endRound(Long userId, Long roomId, Long roundId) {
+        Round round = getRoundByRoomAndRoundId(roomId, roundId);
+        
+        // 1. 해당 라운드의 모든 주문 잠금 (로그만 출력)
+        List<Orders> allRoundOrders = ordersRepository.findByRoundId(roundId);
+        log.info("라운드 {} 주문이 잠겼습니다. 총 주문 수: {}", roundId, allRoundOrders.size());
+        
+        // 2. 해당 방의 모든 팀 조회
+        List<Team> teams = teamRepository.findAllByRoomId(roomId);
+        
+        // 3. 각 팀별 투자 정보 계산
+        List<RoundResultResponse.TeamInvestmentDto> teamInvestments = teams.stream()
+                .map(team -> calculateTeamInvestmentInfo(team, round.getYear().getId()))
+                .toList();
+        
+        return RoundResultResponse.builder()
+                .roundNumber(round.getRoundNumber())
+                .year(round.getYear().getYear())
+                .teamInvestments(teamInvestments)
+                .build();
     }
 
     // Entity 조회 메서드들
@@ -295,5 +320,30 @@ public class StockServiceImpl implements StockService {
 
     private void creditTeamAsset(Team team, int amount) {
         team.setAsset(team.getAsset() + amount);
+    }
+
+    // 라운드 종료 관련 메서드들
+
+    private RoundResultResponse.TeamInvestmentDto calculateTeamInvestmentInfo(Team team, Long yearId) {
+        // 1. 해당 팀의 보유 주식 조회
+        List<StockHeld> heldStocks = stockHeldRepository.findByTeamId(team.getId());
+        
+        // 2. 총 투자 금액 계산 (현재 주식 가치 기준)
+        int totalInvestmentAmount = heldStocks.stream()
+                .mapToInt(sh -> sh.getQty() * sh.getYearInstrument().getPrice())
+                .sum();
+        
+        // 3. 최대 투자 종목 찾기 (투자금액 기준)
+        String maxInvestmentStock = heldStocks.stream()
+                .filter(sh -> sh.getQty() > 0) // 보유량이 있는 것만
+                .max(Comparator.comparingInt(sh -> sh.getQty() * sh.getYearInstrument().getPrice()))
+                .map(sh -> sh.getYearInstrument().getInstrument().getUiLabel())
+                .orElse("없음");
+        
+        return RoundResultResponse.TeamInvestmentDto.builder()
+                .teamName(team.getTeamName())
+                .maxInvestmentStock(maxInvestmentStock)
+                .totalInvestmentAmount(totalInvestmentAmount)
+                .build();
     }
 }
