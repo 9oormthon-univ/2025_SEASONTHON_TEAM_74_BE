@@ -23,6 +23,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.util.Comparator;
 import java.util.List;
 
@@ -265,11 +266,18 @@ public class StockServiceImpl implements StockService {
 
     private List<StockRoundDataResponse.StockInfoDto> buildStockInfoList(Long yearId) {
         return yearInstrumentRepository.findAllWithInstrumentByYearId(yearId).stream()
-                .map(yi -> StockRoundDataResponse.StockInfoDto.builder()
-                        .instrumentId(yi.getInstrument().getId())
-                        .uiLabel(yi.getInstrument().getUiLabel())
-                        .price(yi.getYearOpenPrice())
-                        .build())
+                .map(yi -> {
+                    Long prevYearId = yearId - 1;
+                    BigDecimal annualReturnPct = yearInstrumentRepository.findByYearIdAndInstrumentId(prevYearId, yi.getInstrument().getId())
+                            .map(YearInstrument::getAnnualReturnPct)
+                            .orElse(BigDecimal.valueOf(0));
+                    return StockRoundDataResponse.StockInfoDto.builder()
+                            .instrumentId(yi.getInstrument().getId())
+                            .uiLabel(yi.getInstrument().getUiLabel())
+                            .price(yi.getYearOpenPrice())
+                            .annualReturnPct(annualReturnPct)
+                            .build();
+                })
                 .toList();
     }
 
