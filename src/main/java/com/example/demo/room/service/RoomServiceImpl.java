@@ -296,7 +296,7 @@ public class RoomServiceImpl implements RoomService {
             teamMember.setIsLeader(true);
             teamMember.setIsReady(false);
         }else{
-            if (!teamMember.getIsLeader() && Objects.equals(teamMember.getTeam().getId(), team.getId())) {
+            if (!teamMember.getIsLeader()) {
                 throw new RuntimeException("이미 팀원입니다.");
             }
             teamMember.setIsLeader(false);
