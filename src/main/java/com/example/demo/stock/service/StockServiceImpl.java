@@ -2,6 +2,7 @@ package com.example.demo.stock.service;
 
 import com.example.demo.room.entity.Room;
 import com.example.demo.room.entity.Team;
+import com.example.demo.room.entity.TeamMember;
 import com.example.demo.room.entity.enums.RoomStatus;
 import com.example.demo.room.repository.RoomRepository;
 import com.example.demo.room.repository.TeamMemberRepository;
@@ -63,6 +64,7 @@ public class StockServiceImpl implements StockService {
 
     @Override
     public OrderResponse buyStock(Long userId, Long roomId, OrderBuyRequest request) {
+        validateManageStock(userId, roomId);
         // 1. 기본 데이터 조회
         Round currentRound = getCurrentRoundByRoomId(roomId);
         Team userTeam = getUserTeam(userId, roomId);
@@ -96,6 +98,7 @@ public class StockServiceImpl implements StockService {
 
     @Override
     public OrderResponse sellStock(Long userId, Long roomId, OrderSellRequest request) {
+        validateManageStock(userId, roomId);
         // 1. 기본 데이터 조회
         Round currentRound = getCurrentRoundByRoomId(roomId);
         Team userTeam = getUserTeam(userId, roomId);
@@ -288,6 +291,15 @@ public class StockServiceImpl implements StockService {
     }
 
     // 매도 검증 및 처리 메서드들
+
+    private void validateManageStock(Long userId, Long roomId) {
+        TeamMember teamMember = teamMemberRepository.findByUserIdAndRoomId(userId, roomId)
+                .orElseThrow(() -> new RuntimeException("사용자의 팀 멤버 정보를 찾을 수 없습니다."));
+
+        if (!teamMember.getIsLeader()) {
+            throw new RuntimeException("팀장만 주식 거래를 할 수 있습니다.");
+        }
+    }
 
     private void validateSellRequest(int requestQty, StockHeld heldStock) {
         if (requestQty <= 0) {
