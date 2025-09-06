@@ -3,6 +3,7 @@ package com.example.demo.stock.controller;
 import com.example.demo.apiPayload.ApiResponse;
 import com.example.demo.common.security.JwtTokenProvider;
 import com.example.demo.stock.dto.req.OrderBuyRequest;
+import com.example.demo.stock.dto.req.OrderSellRequest;
 import com.example.demo.stock.dto.res.OrderResponse;
 import com.example.demo.stock.dto.res.StockRoundDataResponse;
 import com.example.demo.stock.service.StockService;
@@ -33,5 +34,14 @@ public class StockController {
     ) {
         Long userId = jwtTokenProvider.getUserIdFromToken();
         return ApiResponse.onSuccess(stockService.buyStock(userId, roomId, request));
+    }
+
+    @PostMapping("/{roomId}/orders/sell")
+    public ApiResponse<OrderResponse> sellStock(
+            @PathVariable Long roomId,
+            @RequestBody OrderSellRequest request
+    ) {
+        Long userId = jwtTokenProvider.getUserIdFromToken();
+        return ApiResponse.onSuccess(stockService.sellStock(userId, roomId, request));
     }
 }

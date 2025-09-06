@@ -4,6 +4,7 @@ import com.example.demo.room.entity.Team;
 import com.example.demo.room.repository.TeamMemberRepository;
 import com.example.demo.room.repository.TeamRepository;
 import com.example.demo.stock.dto.req.OrderBuyRequest;
+import com.example.demo.stock.dto.req.OrderSellRequest;
 import com.example.demo.stock.dto.res.OrderResponse;
 import com.example.demo.stock.dto.res.StockRoundDataResponse;
 import com.example.demo.stock.entity.*;
@@ -83,6 +84,38 @@ public class StockServiceImpl implements StockService {
         );
     }
 
+
+    @Override
+    public OrderResponse sellStock(Long userId, Long roomId, OrderSellRequest request) {
+        // 1. 기본 데이터 조회
+        Round currentRound = getCurrentRoundByRoomId(roomId);
+        Team userTeam = getUserTeam(userId, roomId);
+        YearInstrument yearInstrument = getYearInstrument(currentRound.getYear().getId(), request.instrumentId());
+        
+        // 2. 동시성 보호를 위한 락 조회
+        Team teamForUpdate = getTeamForUpdate(userTeam.getId());
+        StockHeld heldStock = getHeldStock(teamForUpdate, yearInstrument);
+        
+        // 3. 거래 정보 계산 및 검증
+        int serverPrice = yearInstrument.getPrice();
+        int requestQty = request.qty();
+        
+        validateSellRequest(requestQty, heldStock);
+        
+        // 4. 주문 처리
+        Orders order = createAndSaveSellOrder(currentRound, teamForUpdate, serverPrice, requestQty);
+        
+        // 5. 자산 및 포지션 업데이트
+        creditTeamAsset(teamForUpdate, serverPrice * requestQty);
+        updateStockPositionForSell(heldStock, requestQty);
+        
+        return OrderResponse.of(
+                order, teamForUpdate, Side.SELL,
+                serverPrice, requestQty,
+                request.instrumentId()
+        );
+    }
+
     // Entity 조회 메서드들
 
     private Round getRoundByRoomAndRoundId(Long roomId, Long roundId) {
@@ -108,6 +141,12 @@ public class StockServiceImpl implements StockService {
     private YearInstrument getYearInstrument(Long yearId, Long instrumentId) {
         return yearInstrumentRepository.findByYearIdAndInstrumentId(yearId, instrumentId)
                 .orElseThrow(() -> new RuntimeException("해당 년도의 주식 정보를 찾을 수 없습니다."));
+    }
+
+    private StockHeld getHeldStock(Team teamForUpdate, YearInstrument yearInstrument) {
+        return stockHeldRepository.findByTeamIdAndYearInstrumentIdForUpdate(
+                        teamForUpdate.getId(), yearInstrument.getId())
+                .orElseThrow(() -> new RuntimeException("보유하지 않은 주식입니다."));
     }
 
     // 거래 검증 및 처리 메서드들
@@ -203,6 +242,48 @@ public class StockServiceImpl implements StockService {
                 .build();
     }
 
+    // 매도 검증 및 처리 메서드들
+
+    private void validateSellRequest(int requestQty, StockHeld heldStock) {
+        if (requestQty <= 0) {
+            throw new RuntimeException("수량은 1 이상이어야 합니다.");
+        }
+        
+        if (heldStock.getQty() < requestQty) {
+            throw new RuntimeException("보유 수량이 부족합니다.");
+        }
+    }
+
+    private Orders createAndSaveSellOrder(Round round, Team team, int serverPrice, int requestQty) {
+        Orders order = Orders.builder()
+                .round(round)
+                .team(team)
+                .side(Side.SELL)
+                .price(serverPrice)
+                .qty(requestQty)
+                .build();
+        return ordersRepository.save(order);
+    }
+
+    private void updateStockPositionForSell(StockHeld heldStock, int requestQty) {
+        int newQty = heldStock.getQty() - requestQty;
+        
+        if (newQty == 0) {
+            // 모든 주식을 매도한 경우 삭제
+            stockHeldRepository.delete(heldStock);
+        } else {
+            // 수량 업데이트
+            StockHeld updated = StockHeld.builder()
+                    .id(heldStock.getId())
+                    .orders(heldStock.getOrders()) // 기존 참조 유지
+                    .yearInstrument(heldStock.getYearInstrument())
+                    .team(heldStock.getTeam())
+                    .qty(newQty)
+                    .build();
+            stockHeldRepository.save(updated);
+        }
+    }
+
     // 자산 관리 메서드들
 
     private void debitTeamAsset(Team team, int amount) {
@@ -210,5 +291,9 @@ public class StockServiceImpl implements StockService {
             throw new RuntimeException("자산이 부족합니다.");
         }
         team.setAsset(team.getAsset() - amount);
+    }
+
+    private void creditTeamAsset(Team team, int amount) {
+        team.setAsset(team.getAsset() + amount);
     }
 }
