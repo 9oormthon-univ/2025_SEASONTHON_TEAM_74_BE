@@ -15,4 +15,6 @@ public interface StockService {
     OrderResponse sellStock(Long userId, Long roomId, OrderSellRequest request);
 
     RoundResultResponse endRound(Long userId, Long roomId, Long roundId);
+
+    void endGame(Long userId, Long roomId);
 }

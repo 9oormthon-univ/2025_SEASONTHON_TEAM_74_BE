@@ -1,6 +1,9 @@
 package com.example.demo.stock.service;
 
+import com.example.demo.room.entity.Room;
 import com.example.demo.room.entity.Team;
+import com.example.demo.room.entity.enums.RoomStatus;
+import com.example.demo.room.repository.RoomRepository;
 import com.example.demo.room.repository.TeamMemberRepository;
 import com.example.demo.room.repository.TeamRepository;
 import com.example.demo.stock.dto.req.OrderBuyRequest;
@@ -34,6 +37,7 @@ public class StockServiceImpl implements StockService {
     private final YearInstrumentRepository yearInstrumentRepository;
     private final StockHeldRepository stockHeldRepository;
     private final OrdersRepository ordersRepository;
+    private final RoomRepository roomRepository;
 
     @Override
     @Transactional(readOnly = true)
@@ -139,6 +143,16 @@ public class StockServiceImpl implements StockService {
                 .year(round.getYear().getYearId())
                 .teamInvestments(teamInvestments)
                 .build();
+    }
+
+    @Override
+    public void endGame(Long userId, Long roomId) {
+        Room room = roomRepository.findById(roomId)
+                .orElseThrow(() -> new RuntimeException("방을 찾을 수 없습니다."));
+
+        room.setStatus(RoomStatus.ENDED);
+        roomRepository.save(room);
+
     }
 
     // Entity 조회 메서드들
